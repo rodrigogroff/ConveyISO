@@ -15,7 +15,7 @@ namespace ConveyISO
   public class SocketConvey
   {
     public int porta = 2000;
-    public byte[] bytes = new byte[1000];
+    public byte[] bytes = new byte[900000];
     public byte[] bytesTamanho = new byte[10];
     public string data = (string) null;
     private Thread[] workThread2 = new Thread[1000];
