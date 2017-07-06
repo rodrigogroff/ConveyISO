@@ -6,7 +6,7 @@
 
 using System;
 using System.Collections;
-using System.Globalization;
+using System.Globalization; 
 
 public class ISO8583
 {
