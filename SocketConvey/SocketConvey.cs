@@ -1,10 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
-// Type: ConveyISO.SocketConvey
-// Assembly: ConveyISO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: A1A29DB8-D4AD-4F47-B8FA-3FADEED7E861
-// Assembly location: C:\Users\rodrigo.groff\Desktop\ciso\ConveyISO.exe
-
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -12,16 +6,19 @@ using System.Threading;
 
 namespace ConveyISO
 {
-    public class SocketConvey
+    public partial class SocketConvey
     {
-        public int porta = 2000;
-        public byte[] bytes = new byte[900000];
-        public byte[] bytesTamanho = new byte[10];
-        public string data = (string)null;
         private Thread[] workThread2 = new Thread[1000];
         public IPAddress localAddr;
         public TcpListener server;
-        public string respondido;
+
+        public int porta = 2000;
+
+        public string data = null,
+                      respondido;
+
+        public byte[] bytes = new byte[900000],
+                      bytesTamanho = new byte[10];
 
         public int port
         {
@@ -239,156 +236,7 @@ namespace ConveyISO
             this.closeCliente(client);
             Util.LOGSAIDA();
         }
-
-        private string montaVendaCE(ISO8583 regIso)
-        {
-            Util.LOGENTRADA();
-            string codLoja = regIso.codLoja;
-            Util.LOGDADOS("CodEstabelecimento: " + codLoja);
-            string terminal = regIso.terminal;
-            Util.LOGDADOS("codigo Terminal : " + terminal);
-            string s = terminal.Substring(terminal.Length - 4, 4);
-
-            string str = (int.Parse(codLoja.Substring(codLoja.Length - 4, 4)) +
-                          int.Parse(s)).ToString("00000000");
-
-            Util.LOGDADOS("Num terminal atribuido: " + str);
-
-            // original
-            /*string registro = "05" + "CE" + "CE" + str.PadLeft(8, '0') + 
-                      (regIso.trilha2.Trim().Length != 0 ? (regIso.trilha2.Trim().Length != 27 ? 
-                      ("999999" + regIso.trilha2.Substring(17, 6) + 
-                      regIso.trilha2.Substring(23, 6) + 
-                      regIso.trilha2.Substring(29, 3)).PadLeft(27, '0') : 
-                      regIso.trilha2.Trim()) : "999999999999999999999999999") + regIso.senha.PadLeft(16, '0') + 
-                      regIso.valor.PadLeft(12, '0') + "01" + 
-                      regIso.valor.PadLeft(12, '0');
-                      */
-
-            // ajustado
-            string registro = "05CECE1" + codLoja.PadLeft(7, '0') +
-                    (regIso.trilha2.Trim().Length != 0 ? (regIso.trilha2.Trim().Length != 27 ?
-                    ("999999" + regIso.trilha2.Substring(17, 6) +
-                    regIso.trilha2.Substring(23, 6) +
-                    regIso.trilha2.Substring(29, 3)).PadLeft(27, '0') :
-                    regIso.trilha2.Trim()) : "999999999999999999999999999") + regIso.senha.PadLeft(16, '0') +
-                    regIso.valor.PadLeft(12, '0') + "01" +
-                    regIso.valor.PadLeft(12, '0');
-
-            registro = registro.PadRight(200, '*') + terminal + regIso.nsuOrigem;
-
-            Util.LOGSAIDA(registro);
-            return registro;
-        }
-
-        private string montaVendaCEparcelada(ref ISO8583 regIso)
-        {
-            Util.LOGENTRADA();
-            string codLoja = regIso.codLoja;
-            string terminal = regIso.terminal;
-            string s = terminal.Substring(terminal.Length - 4, 4);
-            string str1 = (int.Parse(codLoja.Substring(codLoja.Length - 4, 4)) + int.Parse(s)).ToString("00000000");
-
-            Util.LOGDADOS("Num terminal atribuido: " + str1);
-
-            // original
-            //string str2 = "05" + "CE" + "CE" + str1 + (regIso.trilha2.Trim().Length != 27 ? ("999999" + regIso.trilha2.Substring(17, 6) + regIso.trilha2.Substring(23, 6) + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0') : regIso.trilha2.Trim()) + regIso.senha.PadLeft(16, '0') + regIso.valor.PadLeft(12, '0');
-
-            // ajustado
-            string str2 = "05CECE1" + codLoja.PadLeft(7, '0') + (regIso.trilha2.Trim().Length != 27 ? ("999999" + regIso.trilha2.Substring(17, 6) + regIso.trilha2.Substring(23, 6) + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0') : regIso.trilha2.Trim()) + regIso.senha.PadLeft(16, '0') + regIso.valor.PadLeft(12, '0');
-
-            if (regIso.bit62.Substring(0, 2) == "00")
-                return "";
-
-            int num1 = int.Parse(regIso.valor);
-            int num2 = int.Parse(regIso.bit62.Substring(0, 2));
-            int num3 = num1 / num2;
-            int num4 = num2 * num3;
-            int num5 = num1 - num4;
-            int num6 = num3 + num5;
-            string str3 = num2.ToString("00");
-            for (int index = 0; index < num2; ++index)
-                str3 = index != 0 ? str3 + num3.ToString("000000000000") : str3 + num6.ToString("000000000000");
-            string registro = str2 + str3;
-
-            // ajustado
-            registro = registro.PadRight(200, '*') + terminal + regIso.nsuOrigem;
-
-            regIso.bit62 = str3;
-            Util.LOGSAIDA(registro);
-            return registro;
-        }
-
-        private string montaCancelamento(ISO8583 regIso, string trilha)
-        {
-            Util.LOGENTRADA();
-            string codLoja = regIso.codLoja;
-            string terminal = regIso.terminal;
-            string s = terminal.Substring(terminal.Length - 4, 4);
-            string str = (int.Parse(codLoja.Substring(codLoja.Length - 4, 4)) + int.Parse(s)).ToString("00000000");
-            Util.LOGDADOS("Num terminal atribuido: " + str);
-
-            // original
-            //string registro = "05" + "CE" + "CA" + str.PadLeft(8, '0') + trilha + regIso.bit125.Substring(3) + "00000" + regIso.bit125;
-
-            // ajustado 
-            string registro = "05CECA1" + codLoja.PadLeft(7, '0') + trilha + regIso.bit125.Substring(3) + "00000" + regIso.bit125;
-            registro = registro.PadRight(200, '*') + terminal;
-
-            Util.LOGSAIDA(registro);
-            return registro;
-        }
-
-        private string montaDesfazimento(ISO8583 regIso)
-        {
-            Util.LOGENTRADA();
-            string codLoja = regIso.codLoja;
-            string terminal = regIso.terminal;
-            string s = terminal.Substring(terminal.Length - 4, 4);
-            string str = (int.Parse(codLoja.Substring(codLoja.Length - 4, 4)) + int.Parse(s)).ToString("00000000");
-            Util.LOGDADOS("Num terminal atribuido: " + str);
-
-            // original
-            //string registro = "05" + "CE" + "DF" + str.PadLeft(8, '0') + "0".PadLeft(43, '0') + regIso.valor.PadLeft(12, '0');
-
-            // ajustado
-            string registro = "05CEDF1" + codLoja.PadLeft(7, '0') + "0".PadLeft(43, '0') + regIso.valor.PadLeft(12, '0');
-            registro = registro.PadRight(200, '*') + regIso.nsuOrigem.PadLeft(6,'0');
-
-            Util.LOGSAIDA(registro);
-            return registro;
-        }
-
-        private string montaConfirmacaoCE(ISO8583 regIso)
-        {
-            Util.LOGENTRADA();
-            string codLoja = regIso.codLoja;
-            string terminal = regIso.terminal;
-            string s = terminal.Substring(terminal.Length - 4, 4);
-            string str1 = (int.Parse(codLoja.Substring(codLoja.Length - 4, 4)) + int.Parse(s)).ToString("00000000");
-            Util.LOGDADOS("Num terminal atribuido: " + str1);
-            string str2 = "";
-            string str3 = regIso.bit127;
-            if (str3 == "")
-                str3 = "000000000";
-            int length = regIso.trilha2.Trim().Length;
-            string bit62 = regIso.bit62;
-            if (regIso.bit62.Trim().Length == 27)
-                str2 = regIso.bit62.Trim();
-            else if (regIso.bit62.Trim().Length == 37)
-                str2 = ("999999" + regIso.bit62.Substring(17, 6) + regIso.bit62.Substring(23, 6) + regIso.bit62.Substring(29, 3)).PadLeft(27, '0');
-
-            // original
-            //string registro = "05" + "CE" + "CC" + str1.PadLeft(8, '0') + str2 + str3.Substring(3) + "00000" + str3;
-
-            // ajustado
-            string registro = "05CECC1" + codLoja.PadLeft(7, '0') + str2 + str3.Substring(3) + "00000" + str3;
-            registro = registro.PadRight(200, '*') + terminal;
-
-            Util.LOGSAIDA(registro);
-            return registro;
-        }
-
+        
         public void esperaConectar(ref TcpClient client, ref NetworkStream stream)
         {
             Util.LOGENTRADA();

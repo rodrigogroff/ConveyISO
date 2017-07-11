@@ -8,21 +8,24 @@ using System.IO;
 
 namespace ConveyISO
 {
-  internal class GlobalVar
-  {
-    public static FileStream m_log_file = (FileStream) null;
-    public static StreamWriter m_Log = (StreamWriter) null;
-    public static string nomelog = "";
-    public static bool debugApp = false;
-    public static string BDbanco = "";
-    public static string BDAutorizador = "";
-    public static string SocketPort = "2000";
-    public static frmMain frmPrincipal = (frmMain) null;
-    public static bool finalizar = false;
-    public static bool testes = false;
-    public static string SocketIPCE = "100.0.0.0";
-    public static string SocketPortCE = "1000";
-    public static string tipoRoteamento = "Star";
-    public static int numThreads = 0;
-  }
+    internal class GlobalVar
+    {
+        public static frmMain frmPrincipal = null;
+        public static FileStream m_log_file = null;
+        public static StreamWriter m_Log = null;
+
+        public static bool  debugApp = false,
+                            finalizar = false,
+                            testes = false;
+
+        public static string nomelog = "",
+                             BDbanco = "",
+                             BDAutorizador = "",
+                             SocketPort = "2000",
+                             SocketIPCE = "100.0.0.0",
+                             SocketPortCE = "1000",
+                             tipoRoteamento = "Star";
+
+        public static int numThreads = 0;
+    }
 }

@@ -56,14 +56,21 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ISO\ISO8583_desmontaRegistro.cs" />
+    <Compile Include="ISO\ISO8583_montaRegistro.cs" />
+    <Compile Include="SocketConvey\SocketConvey_montaConfirmacaoCE.cs" />
+    <Compile Include="SocketConvey\SocketConvey_montaDesfazimento.cs" />
+    <Compile Include="SocketConvey\SocketConvey_montaCancelamento.cs" />
+    <Compile Include="SocketConvey\SocketConvey_montaVendaCEparcelada.cs" />
+    <Compile Include="SocketConvey\SocketConvey_montaVendaCE.cs" />
     <Compile Include="Util.cs" />
-    <Compile Include="ISO8583.cs" />
+    <Compile Include="ISO\ISO8583.cs" />
     <Compile Include="frmMain.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GlobalVar.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="SocketConvey.cs" />
+    <Compile Include="SocketConvey\SocketConvey.cs" />
     <Compile Include="Properties\Resources.cs" />
     <Compile Include="Properties\Settings.cs" />
     <Compile Include="AssemblyInfo.cs" />

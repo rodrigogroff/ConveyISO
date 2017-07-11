@@ -56,7 +56,7 @@ namespace ConveyISO
       GlobalVar.m_Log.WriteLine("");
       GlobalVar.m_Log.WriteLine("============================================");
       GlobalVar.m_Log.WriteLine("# ");
-      GlobalVar.m_Log.WriteLine("# ConveyISO Server Log.");
+      GlobalVar.m_Log.WriteLine("# ConveyISO Server Log (v1.1)");
       GlobalVar.m_Log.WriteLine("# " + DateTime.Now.ToString());
       GlobalVar.m_Log.WriteLine("# ");
       GlobalVar.m_Log.WriteLine("============================================");
@@ -151,7 +151,7 @@ namespace ConveyISO
       GlobalVar.m_Log.WriteLine("");
       GlobalVar.m_Log.WriteLine("============================================");
       GlobalVar.m_Log.WriteLine("# ");
-      GlobalVar.m_Log.WriteLine("# ConveyISO Server Log.");
+      GlobalVar.m_Log.WriteLine("# ConveyISO Server Log (1.1)");
       GlobalVar.m_Log.WriteLine("# " + DateTime.Now.ToString());
       GlobalVar.m_Log.WriteLine("# ");
       GlobalVar.m_Log.WriteLine("============================================");
