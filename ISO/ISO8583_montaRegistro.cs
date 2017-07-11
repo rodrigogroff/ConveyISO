@@ -1,18 +1,10 @@
-﻿// Decompiled with JetBrains decompiler
-// Type: ISO8583
-// Assembly: ConveyISO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: A1A29DB8-D4AD-4F47-B8FA-3FADEED7E861
-// Assembly location: C:\Users\rodrigo.groff\Desktop\ciso\ConveyISO.exe
-
-using System;
-using System.Collections;
-using System.Globalization;
-
+﻿
 public partial class ISO8583
 {
     private string monta_registro()
     {
         string str = "" + this.m_codigo + this.mapaBit1;
+
         for (int bitnum = 0; bitnum < 128; ++bitnum)
         {
             if (this.getBit(bitnum))

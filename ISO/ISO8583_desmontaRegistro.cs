@@ -1,10 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
-// Type: ISO8583
-// Assembly: ConveyISO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: A1A29DB8-D4AD-4F47-B8FA-3FADEED7E861
-// Assembly location: C:\Users\rodrigo.groff\Desktop\ciso\ConveyISO.exe
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Globalization;
 
@@ -12,14 +6,17 @@ public partial class ISO8583
 {
     private void desmonta_registro(string regISO)
     {
-        int num1 = 1;
-        int length1 = regISO.Length;
+        int num1 = 1,
+            num2 = 4,
+            startIndex1 = 0,
+            length1 = regISO.Length;
+
         this.m_codigo = regISO.Substring(0, 4);
         this.m_mapaBit1 = regISO.Substring(4, 16);
-        int num2 = 4;
-        string str1 = "";
-        string str2 = "";
-        int startIndex1 = 0;
+        
+        string  str1 = "",
+                str2 = "";
+
         while (startIndex1 < 16)
         {
             BitArray bitArray = new BitArray(BitConverter.GetBytes(int.Parse(this.m_mapaBit1.Substring(startIndex1, 2), NumberStyles.HexNumber)));
@@ -32,7 +29,9 @@ public partial class ISO8583
             str1 = "";
             startIndex1 += 2;
         }
+
         int startIndex2 = num2 + 16;
+
         if (str2.Substring(0, 1) == "1")
         {
             this.m_mapaBit2 = regISO.Substring(20, 16);
@@ -51,11 +50,13 @@ public partial class ISO8583
             }
             startIndex2 += 16;
         }
+
         for (int startIndex3 = 0; startIndex3 < 128; ++startIndex3)
         {
             if (str2.Substring(startIndex3, 1) == "1")
                 this.setBit(startIndex3 + 1);
         }
+
         for (int bitnum = 0; bitnum < 128; ++bitnum)
         {
             if (this.getBit(bitnum))
