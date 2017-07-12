@@ -31,7 +31,7 @@ namespace ConveyISO
                           */
 
                 // ajustado
-                string registro = "05CECE1" + codLoja.PadLeft(7, '0') +
+                string registro = "05CECE1" + codLoja.TrimStart('0').PadLeft(7,'0') +
                         (regIso.trilha2.Trim().Length != 0 ? (regIso.trilha2.Trim().Length != 27 ?
                         ("999999" + regIso.trilha2.Substring(17, 6) +
                         regIso.trilha2.Substring(23, 6) +

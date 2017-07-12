@@ -26,7 +26,7 @@ namespace ConveyISO
             //string registro = "05" + "CE" + "CC" + str1.PadLeft(8, '0') + str2 + str3.Substring(3) + "00000" + str3;
 
             // ajustado
-            string registro = "05CECC1" + codLoja.PadLeft(7, '0') + str2 + str3.Substring(3) + "00000" + str3;
+            string registro = "05CECC1" + codLoja.TrimStart('0').PadLeft(7, '0') + str2 + str3.Substring(3) + "00000" + str3;
             registro = registro.PadRight(200, '*') + terminal;
 
             Util.LOGSAIDA(registro);

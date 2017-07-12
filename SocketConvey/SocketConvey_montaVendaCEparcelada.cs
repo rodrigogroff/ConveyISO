@@ -19,7 +19,10 @@ namespace ConveyISO
                 //string str2 = "05" + "CE" + "CE" + str1 + (regIso.trilha2.Trim().Length != 27 ? ("999999" + regIso.trilha2.Substring(17, 6) + regIso.trilha2.Substring(23, 6) + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0') : regIso.trilha2.Trim()) + regIso.senha.PadLeft(16, '0') + regIso.valor.PadLeft(12, '0');
 
                 // ajustado
-                string str2 = "05CECE1" + codLoja.PadLeft(7, '0') + (regIso.trilha2.Trim().Length != 27 ? ("999999" + regIso.trilha2.Substring(17, 6) + regIso.trilha2.Substring(23, 6) + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0') : regIso.trilha2.Trim()) + regIso.senha.PadLeft(16, '0') + regIso.valor.PadLeft(12, '0');
+                string str2 = "05CECE1" + codLoja.TrimStart('0').PadLeft(7, '0') + 
+                    (regIso.trilha2.Trim().Length != 27 ? ("999999" + regIso.trilha2.Substring(17, 6) + 
+                    regIso.trilha2.Substring(23, 6) + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0') :
+                    regIso.trilha2.Trim()) + regIso.senha.PadLeft(16, '0') + regIso.valor.PadLeft(12, '0');
 
                 if (regIso.bit62.Substring(0, 2) == "00")
                     return "";
