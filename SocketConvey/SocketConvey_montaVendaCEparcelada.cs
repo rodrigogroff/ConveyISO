@@ -39,7 +39,7 @@ namespace ConveyISO
                 string registro = str2 + str3;
 
                 // ajustado
-                registro = registro.PadRight(200, '*') + terminal + regIso.nsuOrigem;
+                registro = registro.PadRight(200, '*') + str1 + regIso.nsuOrigem;
 
                 regIso.bit62 = str3;
                 Util.LOGSAIDA(registro);

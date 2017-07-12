@@ -40,7 +40,7 @@ namespace ConveyISO
                         regIso.valor.PadLeft(12, '0') + "01" +
                         regIso.valor.PadLeft(12, '0');
 
-                registro = registro.PadRight(200, '*') + terminal + regIso.nsuOrigem;
+                registro = registro.PadRight(200, '*') + str + regIso.nsuOrigem;
 
                 Util.LOGSAIDA(registro);
                 return registro;

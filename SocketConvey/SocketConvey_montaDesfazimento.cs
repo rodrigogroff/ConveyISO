@@ -19,7 +19,7 @@ namespace ConveyISO
 
                 // ajustado
                 string registro = "05CEDF1" + codLoja.TrimStart('0').PadLeft(7, '0') + "0".PadLeft(43, '0') + regIso.valor.PadLeft(12, '0');
-                registro = registro.PadRight(200, '*') + regIso.nsuOrigem.PadLeft(6, '0');
+                registro = registro.PadRight(200, '*') + str + regIso.nsuOrigem.TrimStart('0').PadLeft(8, '0');
 
                 Util.LOGSAIDA(registro);
                 return registro;
