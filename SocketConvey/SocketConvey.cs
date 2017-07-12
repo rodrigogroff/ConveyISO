@@ -92,36 +92,14 @@ namespace ConveyISO
                             else
                             {
                                 frmMain frmPrincipal = GlobalVar.frmPrincipal;
-                                object[] objArray1 = new object[6];
-                                objArray1[0] = (object)"Registro ISO Recebido: ";
-                                object[] objArray2 = objArray1;
-                                int index1 = 1;
-                                DateTime now = DateTime.Now;
-                                // ISSUE: variable of a boxed type
-                                var hour = (ValueType)now.Hour;
-                                objArray2[index1] = (object)hour;
-                                objArray1[2] = (object)":";
-                                object[] objArray3 = objArray1;
-                                int index2 = 3;
-                                now = DateTime.Now;
-                                // ISSUE: variable of a boxed type
-                                var minute = (ValueType)now.Minute;
-                                objArray3[index2] = (object)minute;
-                                objArray1[4] = (object)":";
-                                object[] objArray4 = objArray1;
-                                int index3 = 5;
-                                now = DateTime.Now;
-                                // ISSUE: variable of a boxed type
-                                var second = (ValueType)now.Second;
-                                objArray4[index3] = (object)second;
-                                string t = string.Concat(objArray1);
-                                frmPrincipal.AtualizaTela(t);
+                                
+                                frmPrincipal.AtualizaTela("Registro ISO Recebido! ");
+
                                 GlobalVar.frmPrincipal.AtualizaTela("Empresa: " + regIso.codLoja + " terminal: " + regIso.terminal + " tipo: " + str1.Substring(0, 4));
-                                string str2;
+                                
                                 ISO8583 isoRegistro;
                                 if (str1.Substring(0, 4) == "0200" && (regIso.codProcessamento == "002000" || regIso.codProcessamento == "002800"))
                                 {
-                                    str2 = "";
                                     string registro1 = !(regIso.codProcessamento == "002000") ? this.montaVendaCEparcelada(ref regIso) : this.montaVendaCE(regIso);
                                     Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
                                     if (s == null)
@@ -185,7 +163,6 @@ namespace ConveyISO
                                 }
                                 else if (str1.Substring(0, 4) == "0400" || str1.Substring(0, 4) == "0420")
                                 {
-                                    str2 = "";
                                     string str3;
                                     string registro1;
                                     if (str1.Substring(0, 4) == "0400")
