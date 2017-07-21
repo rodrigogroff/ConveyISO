@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace ConveyISO
@@ -10,7 +13,25 @@ namespace ConveyISO
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run((Form)new frmMain());
+
+            while (true)
+            {
+                try
+                {
+                    new frmMain().ShowDialog();
+                }
+                catch (SystemException ex)
+                {
+                    ex.ToString();
+
+                    using (var x = new StreamWriter(DateTime.Now.ToString("ddMMyyyyhhmmss") + ".txt", false, Encoding.Default))
+                    {
+                        x.WriteLine(ex.ToString());
+                    }
+
+                    Thread.Sleep(1000);
+                }
+            }            
         }
     }
 }
