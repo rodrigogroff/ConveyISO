@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -16,7 +17,7 @@ namespace ConveyISO
 {
     public class frmMain : Form
     {
-        public string versao = "v(1.1)";
+        public string versao = "v(1.2)";
 
         private IContainer components = (IContainer)null;
         private bool appActive;
@@ -39,54 +40,78 @@ namespace ConveyISO
 
         public frmMain()
         {
-            this.InitializeComponent();
+            try
+            {
+                this.InitializeComponent();
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show("LIXOOOOO frmMain");
+                
+                throw (new System.Exception(ex.ToString()));
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            string str = "F1F1F1F1F2F2F2F2";
-            byte[] numArray = new byte[8];
-            for (int index = 0; index < str.Length / 2; ++index)
-                numArray[index] = (byte)Convert.ToInt32(str.Substring(index * 2, 2), 16);
-            Util.DESdeCript(Util.DESCript("00345678", numArray), numArray);
-            Util.DESdeCript(Util.DESCript("00345678", "12345678"), "12345678");
-            string path = DateTime.Now.DayOfYear.ToString() + "Log.txt";
-            GlobalVar.nomelog = path;
-            GlobalVar.m_log_file = !File.Exists(path) ? new FileStream(path, FileMode.Create, FileAccess.Write) : new FileStream(path, FileMode.Append, FileAccess.Write);
-            GlobalVar.m_Log = new StreamWriter((Stream)GlobalVar.m_log_file);
-            GlobalVar.m_Log.AutoFlush = true;
-            GlobalVar.m_Log.WriteLine("");
-            GlobalVar.m_Log.WriteLine("============================================");
-            GlobalVar.m_Log.WriteLine("# ");
-            GlobalVar.m_Log.WriteLine("# ConveyISO Server Log " + versao);
-            GlobalVar.m_Log.WriteLine("# " + DateTime.Now.ToString());
-            GlobalVar.m_Log.WriteLine("# ");
-            GlobalVar.m_Log.WriteLine("============================================");
-            GlobalVar.SocketPort = Util.GetIni("Socket", "Port", "parametros.ini", "");
-            if (Util.GetIni("GERAL", "DEBUG", "parametros.ini", "").ToUpper() == "SIM")
+            try
             {
-                Util.LOGCHECK("Iniciando em modo  DEBUG");
-                this.AtualizaTela("Iniciando em modo  DEBUG");
-                GlobalVar.debugApp = true;
-                this.MenuDebug.Checked = true;
+                string str = "F1F1F1F1F2F2F2F2";
+                byte[] numArray = new byte[8];
+                for (int index = 0; index < str.Length / 2; ++index)
+                    numArray[index] = (byte)Convert.ToInt32(str.Substring(index * 2, 2), 16);
+                Util.DESdeCript(Util.DESCript("00345678", numArray), numArray);
+                Util.DESdeCript(Util.DESCript("00345678", "12345678"), "12345678");
+                string path = DateTime.Now.DayOfYear.ToString() + "Log.txt";
+                GlobalVar.nomelog = path;
+                GlobalVar.m_log_file = !File.Exists(path) ? new FileStream(path, FileMode.Create, FileAccess.Write) : new FileStream(path, FileMode.Append, FileAccess.Write);
+                GlobalVar.m_Log = new StreamWriter((Stream)GlobalVar.m_log_file);
+                GlobalVar.m_Log.AutoFlush = true;
+                GlobalVar.m_Log.WriteLine("");
+                GlobalVar.m_Log.WriteLine("============================================");
+                GlobalVar.m_Log.WriteLine("# ");
+                GlobalVar.m_Log.WriteLine("# ConveyISO Server Log " + versao);
+                GlobalVar.m_Log.WriteLine("# " + DateTime.Now.ToString());
+                GlobalVar.m_Log.WriteLine("# ");
+                GlobalVar.m_Log.WriteLine("============================================");
+                GlobalVar.SocketPort = Util.GetIni("Socket", "Port", "parametros.ini", "");
+                if (Util.GetIni("GERAL", "DEBUG", "parametros.ini", "").ToUpper() == "SIM")
+                {
+                    Util.LOGCHECK("Iniciando em modo  DEBUG");
+                    this.AtualizaTela("Iniciando em modo  DEBUG");
+                    GlobalVar.debugApp = true;
+                    this.MenuDebug.Checked = true;
+                }
+                if (Util.GetIni("GERAL", "INICIAR", "parametros.ini", "") == "AUTOMATICO")
+                {
+                    Util.LOGCHECK("Iniciando automaticamente o sistema");
+                    this.AtualizaTela("Iniciando automaticamente o sistema");
+                    this.MenuIniciar_Click(sender, e);
+                }
+                GlobalVar.tipoRoteamento = Util.GetIni("GERAL", "tipoCE", "parametros.ini", "");
+                Util.LOGDADOS("Tipo Roteamento : " + GlobalVar.tipoRoteamento);
+                this.AtualizaTela("Tipo Roteamento : " + GlobalVar.tipoRoteamento);
+                GlobalVar.SocketIPCE = Util.GetIni("Socket", "ipCE", "parametros.ini", "");
+                Util.LOGDADOS("IP Cartao Empresarial = " + GlobalVar.SocketIPCE);
+                this.AtualizaTela("IP Cartao Empresarial = " + GlobalVar.SocketIPCE);
+                GlobalVar.SocketPortCE = Util.GetIni("Socket", "PortCE", "parametros.ini", "");
+                Util.LOGDADOS("Porta Cartao Empresarial = " + GlobalVar.SocketPortCE);
+                this.AtualizaTela("Porta Cartao Empresarial = " + GlobalVar.SocketPortCE);
+                GlobalVar.frmPrincipal = this;
+                Util.LOGSAIDA();
             }
-            if (Util.GetIni("GERAL", "INICIAR", "parametros.ini", "") == "AUTOMATICO")
+            catch (System.Exception ex)
             {
-                Util.LOGCHECK("Iniciando automaticamente o sistema");
-                this.AtualizaTela("Iniciando automaticamente o sistema");
-                this.MenuIniciar_Click(sender, e);
+                ProcessException(ex);
+                Application.Exit();
             }
-            GlobalVar.tipoRoteamento = Util.GetIni("GERAL", "tipoCE", "parametros.ini", "");
-            Util.LOGDADOS("Tipo Roteamento : " + GlobalVar.tipoRoteamento);
-            this.AtualizaTela("Tipo Roteamento : " + GlobalVar.tipoRoteamento);
-            GlobalVar.SocketIPCE = Util.GetIni("Socket", "ipCE", "parametros.ini", "");
-            Util.LOGDADOS("IP Cartao Empresarial = " + GlobalVar.SocketIPCE);
-            this.AtualizaTela("IP Cartao Empresarial = " + GlobalVar.SocketIPCE);
-            GlobalVar.SocketPortCE = Util.GetIni("Socket", "PortCE", "parametros.ini", "");
-            Util.LOGDADOS("Porta Cartao Empresarial = " + GlobalVar.SocketPortCE);
-            this.AtualizaTela("Porta Cartao Empresarial = " + GlobalVar.SocketPortCE);
-            GlobalVar.frmPrincipal = this;
-            Util.LOGSAIDA();
+        }
+
+        public void ProcessException(System.Exception ex)
+        {
+            StreamWriter sw = new StreamWriter("Fail" + DateTime.Now.ToString("ddMMyyyyHHmm") + ".txt", false, Encoding.Default);
+            sw.WriteLine(ex.ToString());
+            sw.Close();
         }
 
         public void AtualizaTela(string t)
@@ -98,9 +123,10 @@ namespace ConveyISO
                 else
                     this.logTela.Items.Add((object)t);
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                Console.WriteLine("Exception: {0}", (object)ex);
+                ProcessException(ex);
+                Application.Exit();
             }
         }
 
@@ -127,36 +153,52 @@ namespace ConveyISO
 
         private void ThreadAPP()
         {
-            Util.LOGENTRADA();
-            this.SocketWork = new SocketConvey();
-            this.SocketWork.port = int.Parse(GlobalVar.SocketPort);
-            this.AtualizaTela("Socket Iniciado - Porta :" + GlobalVar.SocketPort);
-            this.SocketWork.start();
-            Util.LOGSAIDA();
+            try
+            {
+                Util.LOGENTRADA();
+                this.SocketWork = new SocketConvey();
+                this.SocketWork.port = int.Parse(GlobalVar.SocketPort);
+                this.AtualizaTela("Socket Iniciado - Porta :" + GlobalVar.SocketPort);
+                this.SocketWork.start();
+                Util.LOGSAIDA();
+            }
+            catch (System.Exception ex)
+            {
+                ProcessException(ex);
+                Application.Exit();
+            }
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (!this.appActive)
-                return;
-            ++this.progressBar1.Value;
-            if (this.progressBar1.Value > 99)
-                this.progressBar1.Value = 0;
-            string path = DateTime.Now.DayOfYear.ToString() + "Log.txt";
-            if (!(GlobalVar.nomelog != path))
-                return;
-            GlobalVar.m_log_file.Close();
-            GlobalVar.nomelog = path;
-            GlobalVar.m_log_file = !File.Exists(path) ? new FileStream(path, FileMode.Create, FileAccess.Write) : new FileStream(path, FileMode.Append, FileAccess.Write);
-            GlobalVar.m_Log = new StreamWriter((Stream)GlobalVar.m_log_file);
-            GlobalVar.m_Log.AutoFlush = true;
-            GlobalVar.m_Log.WriteLine("");
-            GlobalVar.m_Log.WriteLine("============================================");
-            GlobalVar.m_Log.WriteLine("# ");
-            GlobalVar.m_Log.WriteLine("# ConveyISO Server Log " + versao);
-            GlobalVar.m_Log.WriteLine("# " + DateTime.Now.ToString());
-            GlobalVar.m_Log.WriteLine("# ");
-            GlobalVar.m_Log.WriteLine("============================================");
+            try
+            {
+                if (!this.appActive)
+                    return;
+                ++this.progressBar1.Value;
+                if (this.progressBar1.Value > 99)
+                    this.progressBar1.Value = 0;
+                string path = DateTime.Now.DayOfYear.ToString() + "Log.txt";
+                if (!(GlobalVar.nomelog != path))
+                    return;
+                GlobalVar.m_log_file.Close();
+                GlobalVar.nomelog = path;
+                GlobalVar.m_log_file = !File.Exists(path) ? new FileStream(path, FileMode.Create, FileAccess.Write) : new FileStream(path, FileMode.Append, FileAccess.Write);
+                GlobalVar.m_Log = new StreamWriter((Stream)GlobalVar.m_log_file);
+                GlobalVar.m_Log.AutoFlush = true;
+                GlobalVar.m_Log.WriteLine("");
+                GlobalVar.m_Log.WriteLine("============================================");
+                GlobalVar.m_Log.WriteLine("# ");
+                GlobalVar.m_Log.WriteLine("# ConveyISO Server Log " + versao);
+                GlobalVar.m_Log.WriteLine("# " + DateTime.Now.ToString());
+                GlobalVar.m_Log.WriteLine("# ");
+                GlobalVar.m_Log.WriteLine("============================================");
+            }
+            catch (System.Exception ex)
+            {
+                ProcessException(ex);
+                Application.Exit();
+            }
         }
 
         private void MenuDebug_Click(object sender, EventArgs e)
@@ -206,6 +248,7 @@ namespace ConveyISO
                 }
                 GlobalVar.m_Log.Close();
                 this.Close();
+                Application.Exit();
             }
             catch (Exception ex)
             {
