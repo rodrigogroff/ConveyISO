@@ -45,173 +45,180 @@ namespace ConveyISO
 
         public void RecebeRespondeTransacao()
         {
-            Util.LOGENTRADA();
-            Util.LOGCHECK("Esperando Conexões....");
-            ++GlobalVar.numThreads;
-            TcpClient client = new TcpClient();
-            NetworkStream stream = (NetworkStream)null;
-            this.esperaConectar(ref client, ref stream);
-            if (!GlobalVar.finalizar)
+            try
             {
-                this.workThread2[GlobalVar.numThreads] = new Thread(new ThreadStart(this.RecebeRespondeTransacao));
-                this.workThread2[GlobalVar.numThreads].Start();
-            }
-            bool flag = true;
-            do
-            {
-                if (GlobalVar.finalizar)
-                    flag = false;
-                string str1 = this.esperaDados(ref client, ref stream);
+                Util.LOGENTRADA();
+                Util.LOGCHECK("Esperando Conexões....");
+                ++GlobalVar.numThreads;
+                TcpClient client = new TcpClient();
+                NetworkStream stream = (NetworkStream)null;
+                this.esperaConectar(ref client, ref stream);
                 if (!GlobalVar.finalizar)
                 {
-                    if (str1 != null)
+                    this.workThread2[GlobalVar.numThreads] = new Thread(new ThreadStart(this.RecebeRespondeTransacao));
+                    this.workThread2[GlobalVar.numThreads].Start();
+                }
+                bool flag = true;
+                do
+                {
+                    if (GlobalVar.finalizar)
+                        flag = false;
+                    string str1 = this.esperaDados(ref client, ref stream);
+                    if (!GlobalVar.finalizar)
                     {
-                        if (str1.Length == 0)
-                            Util.LOGCHECK("Encerrada Conexão");
-                        else if (str1.Length < 20)
+                        if (str1 != null)
                         {
-                            GlobalVar.frmPrincipal.AtualizaTela("Registro recebido invalido");
-                            Util.LOGCHECK("Registro recebido invalido - muito pequeno");
-                            Util.LOGDADOS(str1);
-                        }
-                        else if (str1.Substring(0, 4) != "0200" && str1.Substring(0, 4) != "0202" && str1.Substring(0, 4) != "0400" && str1.Substring(0, 4) != "0420")
-                        {
-                            GlobalVar.frmPrincipal.AtualizaTela("Registro recebido não formato ISO8583 esperado  - Ignorado");
-                            Util.LOGCHECK("Registro recebido não formato ISO8583 esperado - Ignorado");
-                            Util.LOGDADOS(str1);
-                        }
-                        else
-                        {
-                            ISO8583 regIso = new ISO8583(str1);
-                            this.logISO(ref regIso);
-                            if (regIso.erro)
+                            if (str1.Length == 0)
+                                Util.LOGCHECK("Encerrada Conexão");
+                            else if (str1.Length < 20)
                             {
-                                GlobalVar.frmPrincipal.AtualizaTela("Registro ISO com erro");
-                                Util.LOGCHECK("Registro ISO com erro");
+                                GlobalVar.frmPrincipal.AtualizaTela("Registro recebido invalido");
+                                Util.LOGCHECK("Registro recebido invalido - muito pequeno");
+                                Util.LOGDADOS(str1);
+                            }
+                            else if (str1.Substring(0, 4) != "0200" && str1.Substring(0, 4) != "0202" && str1.Substring(0, 4) != "0400" && str1.Substring(0, 4) != "0420")
+                            {
+                                GlobalVar.frmPrincipal.AtualizaTela("Registro recebido não formato ISO8583 esperado  - Ignorado");
+                                Util.LOGCHECK("Registro recebido não formato ISO8583 esperado - Ignorado");
+                                Util.LOGDADOS(str1);
                             }
                             else
                             {
-                                frmMain frmPrincipal = GlobalVar.frmPrincipal;
-                                
-                                frmPrincipal.AtualizaTela("Registro ISO Recebido! ");
+                                ISO8583 regIso = new ISO8583(str1);
+                                this.logISO(ref regIso);
+                                if (regIso.erro)
+                                {
+                                    GlobalVar.frmPrincipal.AtualizaTela("Registro ISO com erro");
+                                    Util.LOGCHECK("Registro ISO com erro");
+                                }
+                                else
+                                {
+                                    frmMain frmPrincipal = GlobalVar.frmPrincipal;
 
-                                GlobalVar.frmPrincipal.AtualizaTela("Empresa: " + regIso.codLoja + " terminal: " + regIso.terminal + " tipo: " + str1.Substring(0, 4));
-                                
-                                ISO8583 isoRegistro;
-                                if (str1.Substring(0, 4) == "0200" && (regIso.codProcessamento == "002000" || regIso.codProcessamento == "002800"))
-                                {
-                                    string registro1 = !(regIso.codProcessamento == "002000") ? this.montaVendaCEparcelada(ref regIso) : this.montaVendaCE(regIso);
-                                    Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
-                                    if (s == null)
+                                    frmPrincipal.AtualizaTela("Registro ISO Recebido! ");
+
+                                    GlobalVar.frmPrincipal.AtualizaTela("Empresa: " + regIso.codLoja + " terminal: " + regIso.terminal + " tipo: " + str1.Substring(0, 4));
+
+                                    ISO8583 isoRegistro;
+                                    if (str1.Substring(0, 4) == "0200" && (regIso.codProcessamento == "002000" || regIso.codProcessamento == "002800"))
                                     {
-                                        Util.LOGCHECK("Conexao com Servidor FALHOU");
-                                        Util.LOGSAIDA();
-                                        return;
+                                        string registro1 = !(regIso.codProcessamento == "002000") ? this.montaVendaCEparcelada(ref regIso) : this.montaVendaCE(regIso);
+                                        Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
+                                        if (s == null)
+                                        {
+                                            Util.LOGCHECK("Conexao com Servidor FALHOU");
+                                            Util.LOGSAIDA();
+                                            return;
+                                        }
+                                        this.socketEnvia(s, registro1);
+                                        string str3 = this.socketRecebe(s);
+                                        isoRegistro = new ISO8583();
+                                        isoRegistro.codResposta = str3.Substring(2, 2);
+                                        if (regIso.codProcessamento != "002000")
+                                            isoRegistro.bit63 = regIso.bit62;
+                                        isoRegistro.bit127 = "000" + str3.Substring(7, 6);
+                                        isoRegistro.nsuOrigem = regIso.nsuOrigem;
+                                        isoRegistro.codProcessamento = regIso.codProcessamento;
+                                        isoRegistro.codigo = "0210";
+                                        isoRegistro.valor = regIso.valor;
+                                        isoRegistro.codResposta = str3.Substring(2, 2);
+                                        isoRegistro.terminal = regIso.terminal;
+                                        isoRegistro.codLoja = regIso.codLoja;
+                                        string str4;
+                                        string str5;
+                                        string str6;
+                                        if (regIso.trilha2.Trim().Length == 0)
+                                        {
+                                            str4 = "999999999999999999999999999";
+                                            str5 = "999999";
+                                            str6 = "999999";
+                                        }
+                                        else if (regIso.trilha2.Trim().Length == 27)
+                                        {
+                                            str4 = regIso.trilha2.Trim();
+                                            str5 = regIso.trilha2.Trim().Substring(6, 6);
+                                            str6 = regIso.trilha2.Trim().Substring(12, 6);
+                                        }
+                                        else
+                                        {
+                                            str5 = regIso.trilha2.Substring(17, 6);
+                                            str6 = regIso.trilha2.Substring(23, 6);
+                                            str4 = ("999999" + str5 + str6 + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0');
+                                        }
+                                        isoRegistro.bit62 = !(str3.Substring(2, 2) == "00") ? str3.Substring(73, 20) : str5 + str6 + str4.Substring(18, 3) + str3.Substring(27, 40);
+                                        string registro2 = isoRegistro.registro;
+                                        this.logISO(ref isoRegistro);
+                                        this.enviaDados(registro2, stream);
                                     }
-                                    this.socketEnvia(s, registro1);
-                                    string str3 = this.socketRecebe(s);
-                                    isoRegistro = new ISO8583();
-                                    isoRegistro.codResposta = str3.Substring(2, 2);
-                                    if (regIso.codProcessamento != "002000")
-                                        isoRegistro.bit63 = regIso.bit62;
-                                    isoRegistro.bit127 = "000" + str3.Substring(7, 6);
-                                    isoRegistro.nsuOrigem = regIso.nsuOrigem;
-                                    isoRegistro.codProcessamento = regIso.codProcessamento;
-                                    isoRegistro.codigo = "0210";
-                                    isoRegistro.valor = regIso.valor;
-                                    isoRegistro.codResposta = str3.Substring(2, 2);
-                                    isoRegistro.terminal = regIso.terminal;
-                                    isoRegistro.codLoja = regIso.codLoja;
-                                    string str4;
-                                    string str5;
-                                    string str6;
-                                    if (regIso.trilha2.Trim().Length == 0)
+                                    else if (str1.Substring(0, 4) == "0202")
                                     {
-                                        str4 = "999999999999999999999999999";
-                                        str5 = "999999";
-                                        str6 = "999999";
+                                        GlobalVar.frmPrincipal.AtualizaTela("Registro ISO Recebido - Confirmacao ");
+                                        string registro = this.montaConfirmacaoCE(regIso);
+                                        Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
+                                        if (s == null)
+                                        {
+                                            Util.LOGCHECK("Conexao com Servidor FALHOU");
+                                            Util.LOGSAIDA();
+                                        }
+                                        else
+                                            this.socketEnvia(s, registro);
                                     }
-                                    else if (regIso.trilha2.Trim().Length == 27)
+                                    else if (str1.Substring(0, 4) == "0400" || str1.Substring(0, 4) == "0420")
                                     {
-                                        str4 = regIso.trilha2.Trim();
-                                        str5 = regIso.trilha2.Trim().Substring(6, 6);
-                                        str6 = regIso.trilha2.Trim().Substring(12, 6);
+                                        string str3;
+                                        string registro1;
+                                        if (str1.Substring(0, 4) == "0400")
+                                        {
+                                            str3 = "0410";
+                                            registro1 = this.montaCancelamento(regIso, "012345678901234567890123456");
+                                        }
+                                        else
+                                        {
+                                            str3 = "0430";
+                                            registro1 = this.montaDesfazimento(regIso);
+                                        }
+                                        Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
+                                        if (s == null)
+                                        {
+                                            Util.LOGCHECK("Conexao com Servidor FALHOU");
+                                            Util.LOGSAIDA();
+                                            return;
+                                        }
+                                        this.socketEnvia(s, registro1);
+                                        string str4 = this.socketRecebe(s);
+                                        isoRegistro = new ISO8583();
+                                        isoRegistro.codResposta = str4.Substring(2, 2);
+                                        isoRegistro.bit127 = "000" + str4.Substring(21, 6);
+                                        isoRegistro.nsuOrigem = regIso.nsuOrigem;
+                                        isoRegistro.codProcessamento = regIso.codProcessamento;
+                                        isoRegistro.codigo = str3;
+                                        isoRegistro.codLoja = regIso.codLoja;
+                                        isoRegistro.terminal = regIso.terminal;
+                                        isoRegistro.bit62 = !(str1.Substring(0, 4) == "0400") ? str4.Substring(7, 6) + regIso.valor : regIso.bit125.Substring(3, 6) + regIso.valor;
+                                        string registro2 = isoRegistro.registro;
+                                        Util.LOGDADOS("RESPOSTA ISO = " + registro2);
+                                        this.logISO(ref isoRegistro);
+                                        this.enviaDados(registro2, stream);
                                     }
-                                    else
-                                    {
-                                        str5 = regIso.trilha2.Substring(17, 6);
-                                        str6 = regIso.trilha2.Substring(23, 6);
-                                        str4 = ("999999" + str5 + str6 + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0');
-                                    }
-                                    isoRegistro.bit62 = !(str3.Substring(2, 2) == "00") ? str3.Substring(73, 20) : str5 + str6 + str4.Substring(18, 3) + str3.Substring(27, 40);
-                                    string registro2 = isoRegistro.registro;
-                                    this.logISO(ref isoRegistro);
-                                    this.enviaDados(registro2, stream);
-                                }
-                                else if (str1.Substring(0, 4) == "0202")
-                                {
-                                    GlobalVar.frmPrincipal.AtualizaTela("Registro ISO Recebido - Confirmacao ");
-                                    string registro = this.montaConfirmacaoCE(regIso);
-                                    Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
-                                    if (s == null)
-                                    {
-                                        Util.LOGCHECK("Conexao com Servidor FALHOU");
-                                        Util.LOGSAIDA();
-                                    }
-                                    else
-                                        this.socketEnvia(s, registro);
-                                }
-                                else if (str1.Substring(0, 4) == "0400" || str1.Substring(0, 4) == "0420")
-                                {
-                                    string str3;
-                                    string registro1;
-                                    if (str1.Substring(0, 4) == "0400")
-                                    {
-                                        str3 = "0410";
-                                        registro1 = this.montaCancelamento(regIso, "012345678901234567890123456");
-                                    }
-                                    else
-                                    {
-                                        str3 = "0430";
-                                        registro1 = this.montaDesfazimento(regIso);
-                                    }
-                                    Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
-                                    if (s == null)
-                                    {
-                                        Util.LOGCHECK("Conexao com Servidor FALHOU");
-                                        Util.LOGSAIDA();
-                                        return;
-                                    }
-                                    this.socketEnvia(s, registro1);
-                                    string str4 = this.socketRecebe(s);
-                                    isoRegistro = new ISO8583();
-                                    isoRegistro.codResposta = str4.Substring(2, 2);
-                                    isoRegistro.bit127 = "000" + str4.Substring(21, 6);
-                                    isoRegistro.nsuOrigem = regIso.nsuOrigem;
-                                    isoRegistro.codProcessamento = regIso.codProcessamento;
-                                    isoRegistro.codigo = str3;
-                                    isoRegistro.codLoja = regIso.codLoja;
-                                    isoRegistro.terminal = regIso.terminal;
-                                    isoRegistro.bit62 = !(str1.Substring(0, 4) == "0400") ? str4.Substring(7, 6) + regIso.valor : regIso.bit125.Substring(3, 6) + regIso.valor;
-                                    string registro2 = isoRegistro.registro;
-                                    Util.LOGDADOS("RESPOSTA ISO = " + registro2);
-                                    this.logISO(ref isoRegistro);
-                                    this.enviaDados(registro2, stream);
                                 }
                             }
                         }
                     }
+                    else
+                        goto label_6;
                 }
-                else
-                    goto label_6;
-            }
-            while (flag);
-            goto label_40;
+                while (flag);
+                goto label_40;
             label_6:
-            return;
+                return;
             label_40:
-            this.closeCliente(client);
-            Util.LOGSAIDA();
+                this.closeCliente(client);
+                Util.LOGSAIDA();
+            }
+            catch (System.Exception ex)
+            {
+                throw (ex);
+            }
         }
         
         public void esperaConectar(ref TcpClient client, ref NetworkStream stream)
@@ -325,17 +332,19 @@ namespace ConveyISO
 
         public void enviaDados(string Dados, NetworkStream stream)
         {
-            Util.LOGENTRADA();
-            string str = string.Format("{0:X2}", (object)Dados.Length).PadLeft(4, '0');
-            byte[] numArray = new byte[2];
-            for (int index = 0; index < str.Length / 2; ++index)
-                numArray[index] = (byte)Convert.ToInt32(str.Substring(index * 2, 2), 16);
-            byte[] bytes = Encoding.ASCII.GetBytes("00" + Dados);
-            bytes[0] = numArray[1];
-            bytes[1] = numArray[0];
-            Util.LOGDADOS("tamanho a ser enviado em hexa:" + str.Substring(2) + str.Substring(0, 2));
             try
             {
+
+                Util.LOGENTRADA();
+                string str = string.Format("{0:X2}", (object)Dados.Length).PadLeft(4, '0');
+                byte[] numArray = new byte[2];
+                for (int index = 0; index < str.Length / 2; ++index)
+                    numArray[index] = (byte)Convert.ToInt32(str.Substring(index * 2, 2), 16);
+                byte[] bytes = Encoding.ASCII.GetBytes("00" + Dados);
+                bytes[0] = numArray[1];
+                bytes[1] = numArray[0];
+                Util.LOGDADOS("tamanho a ser enviado em hexa:" + str.Substring(2) + str.Substring(0, 2));
+            
                 stream.Write(bytes, 0, bytes.Length);
             }
             catch (Exception ex)
@@ -350,10 +359,12 @@ namespace ConveyISO
 
         private static Socket connectSocket(string server, int port)
         {
-            Util.LOGENTRADA();
-            Socket socket1 = (Socket)null;
+            Socket socket1 = null;
+
             try
             {
+                Util.LOGENTRADA();                
+
                 foreach (IPAddress address in Dns.Resolve(server).AddressList)
                 {
                     IPEndPoint ipEndPoint = new IPEndPoint(address, port);
@@ -365,6 +376,8 @@ namespace ConveyISO
                         break;
                     }
                 }
+
+                Util.LOGSAIDA();                
             }
             catch (SocketException ex)
             {
@@ -378,55 +391,80 @@ namespace ConveyISO
                 Util.LOGERRO("EXCEPTION = Source : " + ex.Source);
                 Util.LOGERRO("EXCEPTION = Message : " + ex.Message);
             }
-            Util.LOGSAIDA();
+
             return socket1;
         }
 
         public void socketEnvia(Socket s, string registro)
         {
-            Util.LOGENTRADA();
-            byte[] bytes = Encoding.ASCII.GetBytes(registro);
-            byte[] numArray = new byte[256];
-            s.Send(bytes, bytes.Length, SocketFlags.None);
-            Util.LOGSAIDA();
+            try
+            {
+                Util.LOGENTRADA();
+                byte[] bytes = Encoding.ASCII.GetBytes(registro);
+
+                s.Send(bytes, bytes.Length, SocketFlags.None);
+                Util.LOGSAIDA();
+            }
+            catch (System.Exception ex)
+            {
+                Util.LOGERRO("EXCEPTION =" + ex.ToString());
+            }
         }
 
         public string socketRecebe(Socket s)
         {
-            Util.LOGENTRADA();
-            Encoding ascii = Encoding.ASCII;
-            byte[] numArray = new byte[256];
-            int bytes = s.Receive(numArray, numArray.Length, SocketFlags.None);
-            string registro = this.ConvertBytetoString(numArray, bytes);
-            Util.LOGDADOS(registro);
-            Util.LOGSAIDA();
-            return registro;
+            try
+            {
+                Util.LOGENTRADA();
+                Encoding ascii = Encoding.ASCII;
+                byte[] numArray = new byte[256];
+                int bytes = s.Receive(numArray, numArray.Length, SocketFlags.None);
+                string registro = this.ConvertBytetoString(numArray, bytes);
+                Util.LOGDADOS(registro);
+                Util.LOGSAIDA();
+                return registro;
+            }
+            catch (System.Exception ex)
+            {
+                Util.LOGERRO("EXCEPTION =" + ex.ToString());
+                return "";
+            }
         }
 
         public string conectaSocketEnvia(string ipcliente, int porta, string registro)
         {
-            Util.LOGENTRADA();
-            byte[] bytes1 = Encoding.ASCII.GetBytes(registro);
-            Socket socket = SocketConvey.connectSocket(ipcliente, porta);
-            if (socket == null)
-                return "Connection failed";
-            byte[] numArray = new byte[256];
-            socket.Send(bytes1, bytes1.Length, SocketFlags.None);
-            int bytes2 = socket.Receive(numArray, numArray.Length, SocketFlags.None);
-            string str = this.ConvertBytetoString(numArray, bytes2);
-            socket.Close();
-            Util.LOGSAIDA();
-            return str;
+            try
+            {
+                Util.LOGENTRADA();
+                byte[] bytes1 = Encoding.ASCII.GetBytes(registro);
+                Socket socket = SocketConvey.connectSocket(ipcliente, porta);
+                if (socket == null)
+                    return "Connection failed";
+                byte[] numArray = new byte[256];
+                socket.Send(bytes1, bytes1.Length, SocketFlags.None);
+                int bytes2 = socket.Receive(numArray, numArray.Length, SocketFlags.None);
+                string str = this.ConvertBytetoString(numArray, bytes2);
+                socket.Close();
+                Util.LOGSAIDA();
+                return str;
+            }
+            catch (System.Exception ex)
+            {
+                Util.LOGERRO("EXCEPTION =" + ex.ToString());
+                return "";
+            }
         }
 
         public string ConvertBytetoString(byte[] recebido, int bytes)
         {
             StringBuilder stringBuilder = new StringBuilder();
+
             for (int index = 0; index < recebido.Length; ++index)
             {
                 char ch = Convert.ToChar(recebido[index]);
-                stringBuilder.Append(string.Format("{0:s}", (object)ch.ToString()));
+                stringBuilder.Append(string.Format("{0:s}", ch.ToString()));
             }
+
             return stringBuilder.ToString().Substring(0, bytes);
         }
 

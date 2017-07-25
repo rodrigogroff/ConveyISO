@@ -12,15 +12,20 @@ namespace ConveyISO
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.Automatic);
-
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException);
+            
             while (true)
             {                
-                Application.Run(new frmMain());
-
-                StreamWriter sw = new StreamWriter("Re-Start" + DateTime.Now.ToString("ddMMyyyyHHmm") + ".txt", false, Encoding.Default);
-                sw.WriteLine("Exited!");
-                sw.Close();
+                try
+                {
+                    new frmMain().ShowDialog();
+                }
+                catch (System.Exception ex)
+                {
+                    StreamWriter sw = new StreamWriter("Re-Start" + DateTime.Now.ToString("ddMMyyyyHHmm") + ".txt", false, Encoding.Default);
+                    sw.WriteLine("Exited! - " + ex.ToString());
+                    sw.Close();
+                }                
             }            
         }
     }

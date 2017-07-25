@@ -46,8 +46,6 @@ namespace ConveyISO
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show("LIXOOOOO frmMain");
-                
                 throw (new System.Exception(ex.ToString()));
             }
         }
@@ -103,7 +101,6 @@ namespace ConveyISO
             catch (System.Exception ex)
             {
                 ProcessException(ex);
-                Application.Exit();
             }
         }
 
@@ -126,7 +123,6 @@ namespace ConveyISO
             catch (System.Exception ex)
             {
                 ProcessException(ex);
-                Application.Exit();
             }
         }
 
@@ -165,7 +161,6 @@ namespace ConveyISO
             catch (System.Exception ex)
             {
                 ProcessException(ex);
-                Application.Exit();
             }
         }
 
@@ -197,7 +192,6 @@ namespace ConveyISO
             catch (System.Exception ex)
             {
                 ProcessException(ex);
-                Application.Exit();
             }
         }
 
