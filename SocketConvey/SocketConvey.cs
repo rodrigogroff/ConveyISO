@@ -103,6 +103,14 @@ namespace ConveyISO
                                     if (str1.Substring(0, 4) == "0200" && (regIso.codProcessamento == "002000" || regIso.codProcessamento == "002800"))
                                     {
                                         string registro1 = !(regIso.codProcessamento == "002000") ? this.montaVendaCEparcelada(ref regIso) : this.montaVendaCE(regIso);
+
+                                        if (registro1 == "")
+                                        {
+                                            Util.LOGCHECK("Falhas na desmontagem da iso enviada pelo SITEF");
+                                            Util.LOGSAIDA();
+                                            return;
+                                        }
+
                                         Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
                                         if (s == null)
                                         {

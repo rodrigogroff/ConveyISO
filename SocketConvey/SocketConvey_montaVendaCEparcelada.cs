@@ -24,6 +24,16 @@ namespace ConveyISO
                     regIso.trilha2.Substring(23, 6) + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0') :
                     regIso.trilha2.Trim()) + regIso.senha.PadLeft(16, '0') + regIso.valor.PadLeft(12, '0');
 
+                //                             1         2         
+                //                   012345678901234567890123456789
+                //bit(35) - trilha = 826766001401000650011651018
+
+                if (regIso.bit62 == "")
+                {
+                    Util.LOGDADOS("BIT 62 vazio!");
+                    return "";
+                }
+
                 if (regIso.bit62.Substring(0, 2) == "00")
                     return "";
 
