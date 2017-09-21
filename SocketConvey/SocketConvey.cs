@@ -110,7 +110,7 @@ namespace ConveyISO
                                             Util.LOGSAIDA();
                                             return;
                                         }
-
+                                        
                                         Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
                                         if (s == null)
                                         {
@@ -162,6 +162,13 @@ namespace ConveyISO
                                     {
                                         GlobalVar.frmPrincipal.AtualizaTela("Registro ISO Recebido - Confirmacao ");
                                         string registro = this.montaConfirmacaoCE(regIso);
+
+                                        if (registro == "")
+                                        {
+                                            Util.LOGCHECK("Falha na desmontagem!");
+                                            Util.LOGSAIDA();
+                                        }
+
                                         Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
                                         if (s == null)
                                         {
@@ -185,6 +192,13 @@ namespace ConveyISO
                                             str3 = "0430";
                                             registro1 = this.montaDesfazimento(regIso);
                                         }
+
+                                        if (registro1 == "")
+                                        {
+                                            Util.LOGCHECK("Falha na desmontagem!");
+                                            Util.LOGSAIDA();
+                                        }
+
                                         Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
                                         if (s == null)
                                         {

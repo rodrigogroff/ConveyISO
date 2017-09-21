@@ -12,6 +12,31 @@ namespace ConveyISO
                 Util.LOGDADOS("CodEstabelecimento: " + codLoja);
                 string terminal = regIso.terminal;
                 Util.LOGDADOS("codigo Terminal : " + terminal);
+
+                if (regIso.codLoja == "")
+                {
+                    Util.LOGDADOS("codLoja vazio!");
+                    return "";
+                }
+
+                if (regIso.codLoja.Length < 4)
+                {
+                    Util.LOGDADOS("codLoja menor de 4 chars!");
+                    return "";
+                }
+
+                if (regIso.terminal == "")
+                {
+                    Util.LOGDADOS("terminal vazio!");
+                    return "";
+                }
+
+                if (regIso.terminal.Length < 4)
+                {
+                    Util.LOGDADOS("terminal menor de 4 chars!");
+                    return "";
+                }
+
                 string s = terminal.Substring(terminal.Length - 4, 4);
 
                 string str = (int.Parse(codLoja.Substring(codLoja.Length - 4, 4)) +

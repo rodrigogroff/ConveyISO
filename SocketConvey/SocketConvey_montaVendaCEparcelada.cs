@@ -8,8 +8,34 @@ namespace ConveyISO
             try
             {
                 Util.LOGENTRADA();
+
                 string codLoja = regIso.codLoja;
                 string terminal = regIso.terminal;
+
+                if (regIso.codLoja == "")
+                {
+                    Util.LOGDADOS("codLoja vazio!");
+                    return "";
+                }
+
+                if (regIso.codLoja.Length < 4)
+                {
+                    Util.LOGDADOS("codLoja menor de 4 chars!");
+                    return "";
+                }
+
+                if (regIso.terminal == "")
+                {
+                    Util.LOGDADOS("terminal vazio!");
+                    return "";
+                }
+
+                if (regIso.terminal.Length < 4)
+                {
+                    Util.LOGDADOS("terminal menor de 4 chars!");
+                    return "";
+                }
+
                 string s = terminal.Substring(terminal.Length - 4, 4);
                 string str1 = (int.Parse(codLoja.Substring(codLoja.Length - 4, 4)) + int.Parse(s)).ToString("00000000");
 
@@ -17,6 +43,12 @@ namespace ConveyISO
 
                 // original
                 //string str2 = "05" + "CE" + "CE" + str1 + (regIso.trilha2.Trim().Length != 27 ? ("999999" + regIso.trilha2.Substring(17, 6) + regIso.trilha2.Substring(23, 6) + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0') : regIso.trilha2.Trim()) + regIso.senha.PadLeft(16, '0') + regIso.valor.PadLeft(12, '0');
+
+                if (regIso.trilha2 == "")
+                {
+                    Util.LOGDADOS("trilha vazia!");
+                    return "";
+                }
 
                 // ajustado
                 string str2 = "05CECE1" + codLoja.TrimStart('0').PadLeft(7, '0') + 
@@ -29,6 +61,12 @@ namespace ConveyISO
                 //bit(35) - trilha = 826766001401000650011651018
 
                 if (regIso.bit62 == "")
+                {
+                    Util.LOGDADOS("BIT 62 vazio!");
+                    return "";
+                }
+
+                if (regIso.bit62.Length < 2)
                 {
                     Util.LOGDADOS("BIT 62 vazio!");
                     return "";
