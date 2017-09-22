@@ -17,7 +17,7 @@ namespace ConveyISO
 {
     public class frmMain : Form
     {
-        public string versao = "v(1.2)";
+        public string versao = "v(1.25)";
 
         private IContainer components = (IContainer)null;
         private bool appActive;

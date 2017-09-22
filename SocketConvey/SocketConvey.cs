@@ -170,6 +170,7 @@ namespace ConveyISO
                                         }
 
                                         Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
+
                                         if (s == null)
                                         {
                                             Util.LOGCHECK("Conexao com Servidor FALHOU");
@@ -263,18 +264,27 @@ namespace ConveyISO
             Console.Write("Waiting for a connection... ");
             try
             {
+                Util.LOGDADOS("Waiting for a connection...");
                 this.data = (string)null;
                 stream = client.GetStream();
                 bool flag2 = true;
                 do
                 {
+                    Util.LOGDADOS("WAIT ...");
+
                     if (stream.DataAvailable)
                         flag2 = false;
-                    Thread.Sleep(10);
+
+                    Thread.Sleep(5000);
+
                     if (GlobalVar.finalizar)
+                    {
+                        Util.LOGDADOS("SAINDO GlobalVar.finalizar");
                         return "";
+                    }                        
                 }
                 while (flag2);
+
                 if (stream.CanRead)
                     flag1 = true;
             }
@@ -283,9 +293,12 @@ namespace ConveyISO
                 Console.WriteLine("Exception: {0}", (object)ex);
                 return (string)null;
             }
+              
             if (flag1)
                 str = this.leDadosSocket(client, stream);
+
             Util.LOGSAIDA();
+
             return str;
         }
 
@@ -422,9 +435,11 @@ namespace ConveyISO
             try
             {
                 Util.LOGENTRADA();
+                
                 byte[] bytes = Encoding.ASCII.GetBytes(registro);
 
                 s.Send(bytes, bytes.Length, SocketFlags.None);
+
                 Util.LOGSAIDA();
             }
             catch (System.Exception ex)
