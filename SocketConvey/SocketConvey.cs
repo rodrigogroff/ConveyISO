@@ -119,8 +119,27 @@ namespace ConveyISO
                                             return;
                                         }
                                         this.socketEnvia(s, registro1);
+
                                         string str3 = this.socketRecebe(s);
+
+                                        Util.LOGCHECK("str3 0200: >" + str3 + "<");
+
+                                        if (str3 == "")
+                                        {
+                                            Util.LOGCHECK("Recebeu ISO vazio");
+                                            Util.LOGSAIDA();
+                                            return;
+                                        }
+
+                                        if (str3.Length < 14 )
+                                        {
+                                            Util.LOGCHECK("Recebeu ISO tamanho incorreto");
+                                            Util.LOGSAIDA();
+                                            return;
+                                        }
+
                                         isoRegistro = new ISO8583();
+                                        
                                         isoRegistro.codResposta = str3.Substring(2, 2);
                                         if (regIso.codProcessamento != "002000")
                                             isoRegistro.bit63 = regIso.bit62;
@@ -209,6 +228,23 @@ namespace ConveyISO
                                         }
                                         this.socketEnvia(s, registro1);
                                         string str4 = this.socketRecebe(s);
+
+                                        Util.LOGCHECK("str4 0400: >" + str4 + "<");
+
+                                        if (str4 == "")
+                                        {
+                                            Util.LOGCHECK("Recebeu ISO vazio");
+                                            Util.LOGSAIDA();
+                                            return;
+                                        }
+
+                                        if (str4.Length < 27)
+                                        {
+                                            Util.LOGCHECK("Recebeu ISO tamanho incorreto");
+                                            Util.LOGSAIDA();
+                                            return;
+                                        }
+                                        
                                         isoRegistro = new ISO8583();
                                         isoRegistro.codResposta = str4.Substring(2, 2);
                                         isoRegistro.bit127 = "000" + str4.Substring(21, 6);
@@ -217,7 +253,11 @@ namespace ConveyISO
                                         isoRegistro.codigo = str3;
                                         isoRegistro.codLoja = regIso.codLoja;
                                         isoRegistro.terminal = regIso.terminal;
+
+                                        Util.LOGCHECK("Montagem Bit 62");
+
                                         isoRegistro.bit62 = !(str1.Substring(0, 4) == "0400") ? str4.Substring(7, 6) + regIso.valor : regIso.bit125.Substring(3, 6) + regIso.valor;
+
                                         string registro2 = isoRegistro.registro;
                                         Util.LOGDADOS("RESPOSTA ISO = " + registro2);
                                         this.logISO(ref isoRegistro);
@@ -270,12 +310,10 @@ namespace ConveyISO
                 bool flag2 = true;
                 do
                 {
-                    Util.LOGDADOS("WAIT ...");
-
                     if (stream.DataAvailable)
                         flag2 = false;
 
-                    Thread.Sleep(5000);
+                    Thread.Sleep(100);
 
                     if (GlobalVar.finalizar)
                     {
