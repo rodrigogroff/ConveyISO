@@ -63,11 +63,25 @@ namespace ConveyISO
                 {
                     if (GlobalVar.finalizar)
                         flag = false;
+
                     string str1 = this.esperaDados(ref client, ref stream);
+
                     if (!GlobalVar.finalizar)
                     {
                         if (str1 != null)
                         {
+                            if (str1.StartsWith("?") || str1.StartsWith("g"))
+                            {
+                                Util.LOGCHECK("PACOTE ESTRANHO");
+
+                                if (str1.Length > 2)
+                                {
+                                    str1 = str1.Substring(2);
+
+                                    Util.LOGCHECK("AJUSTADO PARA <" + str1 + ">" );
+                                }                                    
+                            }
+
                             if (str1.Length == 0)
                                 Util.LOGCHECK("Encerrada Conexão");
                             else if (str1.Length < 20)
