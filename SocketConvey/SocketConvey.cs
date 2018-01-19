@@ -68,9 +68,9 @@ namespace ConveyISO
 
                     if (!GlobalVar.finalizar)
                     {
-                        if (str1 != null)
-                        {
-                            if (str1.StartsWith("?") || str1.StartsWith("g"))
+                        if (str1 != null && str1.Length > 2)
+                        {                            
+                            if (str1[0] != '0')
                             {
                                 Util.LOGCHECK("PACOTE ESTRANHO");
 
@@ -78,8 +78,8 @@ namespace ConveyISO
                                 {
                                     str1 = str1.Substring(2);
 
-                                    Util.LOGCHECK("AJUSTADO PARA <" + str1 + ">" );
-                                }                                    
+                                    Util.LOGCHECK("AJUSTADO PARA <" + str1 + ">");
+                                }
                             }
 
                             if (str1.Length == 0)
