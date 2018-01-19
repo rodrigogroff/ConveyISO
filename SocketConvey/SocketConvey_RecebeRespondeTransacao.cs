@@ -29,6 +29,9 @@ namespace ConveyISO
                 {
                     if (str1 != null)
                     {
+                        if (str1.StartsWith("?"))
+                            str1 = str1.Substring(2);
+
                         if (str1.Length == 0)
                             Util.LOGCHECK("Encerrada Conexão");
                         else if (str1.Length < 20)
