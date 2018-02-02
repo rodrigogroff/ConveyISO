@@ -63,25 +63,11 @@ namespace ConveyISO
                 {
                     if (GlobalVar.finalizar)
                         flag = false;
-
                     string str1 = this.esperaDados(ref client, ref stream);
-
                     if (!GlobalVar.finalizar)
                     {
-                        if (str1 != null && str1.Length > 2)
-                        {                            
-                            if (str1[0] != '0')
-                            {
-                                Util.LOGCHECK("PACOTE ESTRANHO");
-
-                                if (str1.Length > 2)
-                                {
-                                    str1 = str1.Substring(2);
-
-                                    Util.LOGCHECK("AJUSTADO PARA <" + str1 + ">");
-                                }
-                            }
-
+                        if (str1 != null)
+                        {
                             if (str1.Length == 0)
                                 Util.LOGCHECK("Encerrada Conexão");
                             else if (str1.Length < 20)
@@ -124,7 +110,7 @@ namespace ConveyISO
                                             Util.LOGSAIDA();
                                             return;
                                         }
-                                        
+
                                         Socket s = SocketConvey.connectSocket(GlobalVar.SocketIPCE, int.Parse(GlobalVar.SocketPortCE));
                                         if (s == null)
                                         {
@@ -145,7 +131,7 @@ namespace ConveyISO
                                             return;
                                         }
 
-                                        if (str3.Length < 14 )
+                                        if (str3.Length < 14)
                                         {
                                             Util.LOGCHECK("Recebeu ISO tamanho incorreto");
                                             Util.LOGSAIDA();
@@ -153,7 +139,7 @@ namespace ConveyISO
                                         }
 
                                         isoRegistro = new ISO8583();
-                                        
+
                                         isoRegistro.codResposta = str3.Substring(2, 2);
                                         if (regIso.codProcessamento != "002000")
                                             isoRegistro.bit63 = regIso.bit62;
@@ -258,7 +244,7 @@ namespace ConveyISO
                                             Util.LOGSAIDA();
                                             return;
                                         }
-                                        
+
                                         isoRegistro = new ISO8583();
                                         isoRegistro.codResposta = str4.Substring(2, 2);
                                         isoRegistro.bit127 = "000" + str4.Substring(21, 6);
@@ -286,9 +272,9 @@ namespace ConveyISO
                 }
                 while (flag);
                 goto label_40;
-            label_6:
+                label_6:
                 return;
-            label_40:
+                label_40:
                 this.closeCliente(client);
                 Util.LOGSAIDA();
             }
@@ -297,7 +283,7 @@ namespace ConveyISO
                 throw (ex);
             }
         }
-        
+
         public void esperaConectar(ref TcpClient client, ref NetworkStream stream)
         {
             Util.LOGENTRADA();
@@ -333,7 +319,7 @@ namespace ConveyISO
                     {
                         Util.LOGDADOS("SAINDO GlobalVar.finalizar");
                         return "";
-                    }                        
+                    }
                 }
                 while (flag2);
 
@@ -345,7 +331,7 @@ namespace ConveyISO
                 Console.WriteLine("Exception: {0}", (object)ex);
                 return (string)null;
             }
-              
+
             if (flag1)
                 str = this.leDadosSocket(client, stream);
 
@@ -431,7 +417,7 @@ namespace ConveyISO
                 bytes[0] = numArray[1];
                 bytes[1] = numArray[0];
                 Util.LOGDADOS("tamanho a ser enviado em hexa:" + str.Substring(2) + str.Substring(0, 2));
-            
+
                 stream.Write(bytes, 0, bytes.Length);
             }
             catch (Exception ex)
@@ -450,7 +436,7 @@ namespace ConveyISO
 
             try
             {
-                Util.LOGENTRADA();                
+                Util.LOGENTRADA();
 
                 foreach (IPAddress address in Dns.Resolve(server).AddressList)
                 {
@@ -464,7 +450,7 @@ namespace ConveyISO
                     }
                 }
 
-                Util.LOGSAIDA();                
+                Util.LOGSAIDA();
             }
             catch (SocketException ex)
             {
@@ -487,7 +473,7 @@ namespace ConveyISO
             try
             {
                 Util.LOGENTRADA();
-                
+
                 byte[] bytes = Encoding.ASCII.GetBytes(registro);
 
                 s.Send(bytes, bytes.Length, SocketFlags.None);
