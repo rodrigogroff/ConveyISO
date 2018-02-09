@@ -74,7 +74,7 @@ namespace ConveyISO
                             {
                                 Util.LOGCHECK("Encerrada Conexão");                                
                             }                                
-                            else if (dadosRecebidos.Length < 20)
+                            else if (dadosRecebidos.Length <= 20)
                             {
                                 GlobalVar.frmPrincipal.AtualizaTela("Registro recebido invalido");
                                 Util.LOGCHECK("Registro recebido invalido - muito pequeno");
@@ -82,6 +82,8 @@ namespace ConveyISO
                             }
                             else
                             {
+                                Util.LOGDADOS("pacote válido " + dadosRecebidos);
+
                                 if (dadosRecebidos.Substring(0, 4) != "0200" &&
                                     dadosRecebidos.Substring(0, 4) != "0202" && 
                                     dadosRecebidos.Substring(0, 4) != "0400" && 
@@ -114,7 +116,8 @@ namespace ConveyISO
                                             (regIso.codProcessamento == "002000" ||
                                              regIso.codProcessamento == "002800"))
                                         {
-                                            string registro1 = !(regIso.codProcessamento == "002000") ? this.montaVendaCEparcelada(ref regIso) : this.montaVendaCE(regIso);
+                                            string registro1 = !(regIso.codProcessamento == "002000") ? 
+                                                this.montaVendaCEparcelada(ref regIso) : this.montaVendaCE(regIso);
 
                                             if (registro1 == "")
                                             {
@@ -143,13 +146,15 @@ namespace ConveyISO
                                                     Util.LOGCHECK("Recebeu ISO vazio");
                                                     Util.LOGSAIDA();
                                                 }
-                                                else if (dadosSocket.Length < 20)
+                                                else if (dadosSocket.Length <= 20)
                                                 {
                                                     Util.LOGCHECK("Recebeu ISO tamanho incorreto");
                                                     Util.LOGSAIDA();
                                                 }
                                                 else
                                                 {
+                                                    dadosSocket = dadosSocket.PadRight(200, ' ');
+
                                                     isoRegistro = new ISO8583();
 
                                                     isoRegistro.codResposta = dadosSocket.Substring(2, 2);
@@ -184,8 +189,13 @@ namespace ConveyISO
                                                         str6 = regIso.trilha2.Substring(23, 6);
                                                         str4 = ("999999" + str5 + str6 + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0');
                                                     }
-                                                    isoRegistro.bit62 = !(dadosSocket.Substring(2, 2) == "00") ? dadosSocket.Substring(73, 20) : str5 + str6 + str4.Substring(18, 3) + dadosSocket.Substring(27, 40);
+
+                                                    isoRegistro.bit62 = !(dadosSocket.Substring(2, 2) == "00") ? 
+                                                        dadosSocket.Substring(73, 20) : 
+                                                        str5 + str6 + str4.Substring(18, 3) + dadosSocket.Substring(27, 40);
+
                                                     string registro2 = isoRegistro.registro;
+
                                                     this.logISO(ref isoRegistro);
                                                     this.enviaDados(registro2, stream);
                                                 }
@@ -194,9 +204,10 @@ namespace ConveyISO
                                         else if (dadosRecebidos.Substring(0, 4) == "0202")
                                         {
                                             GlobalVar.frmPrincipal.AtualizaTela("Registro ISO Recebido - Confirmacao ");
+
                                             string registro = this.montaConfirmacaoCE(regIso);
 
-                                            if (string.IsNullOrEmpty(registro ))
+                                            if (string.IsNullOrEmpty(registro))
                                             {
                                                 Util.LOGCHECK("Falha na desmontagem!");
                                                 Util.LOGSAIDA();
@@ -219,6 +230,7 @@ namespace ConveyISO
                                         {
                                             string str3;
                                             string registro1;
+
                                             if (dadosRecebidos.Substring(0, 4) == "0400")
                                             {
                                                 str3 = "0410";
@@ -250,25 +262,27 @@ namespace ConveyISO
                                                     return;
                                                 }
                                                 this.socketEnvia(s, registro1);
-                                                string str4 = this.socketRecebe(s);
+                                                string dadosRec400 = this.socketRecebe(s);
 
-                                                Util.LOGCHECK("str4 0400: >" + str4 + "<");
+                                                Util.LOGCHECK("dadosRecebidos 0400: >" + dadosRec400 + "<");
 
-                                                if (str4 == "")
+                                                if (dadosRec400 == "")
                                                 {
                                                     Util.LOGCHECK("Recebeu ISO vazio");
                                                     Util.LOGSAIDA();
                                                 }
-                                                else if (str4.Length < 27)
+                                                else if (dadosRec400.Length < 27)
                                                 {
                                                     Util.LOGCHECK("Recebeu ISO tamanho incorreto");
                                                     Util.LOGSAIDA();
                                                 }
                                                 else
                                                 {
+                                                    dadosRec400 = dadosRec400.PadRight(200, ' ');
+
                                                     isoRegistro = new ISO8583();
-                                                    isoRegistro.codResposta = str4.Substring(2, 2);
-                                                    isoRegistro.bit127 = "000" + str4.Substring(21, 6);
+                                                    isoRegistro.codResposta = dadosRec400.Substring(2, 2);
+                                                    isoRegistro.bit127 = "000" + dadosRec400.Substring(21, 6);
                                                     isoRegistro.nsuOrigem = regIso.nsuOrigem;
                                                     isoRegistro.codProcessamento = regIso.codProcessamento;
                                                     isoRegistro.codigo = str3;
@@ -277,7 +291,7 @@ namespace ConveyISO
 
                                                     Util.LOGCHECK("Montagem Bit 62");
 
-                                                    isoRegistro.bit62 = !(dadosRecebidos.Substring(0, 4) == "0400") ? str4.Substring(7, 6) + regIso.valor : regIso.bit125.Substring(3, 6) + regIso.valor;
+                                                    isoRegistro.bit62 = !(dadosRec400.Substring(0, 4) == "0400") ? dadosRec400.Substring(7, 6) + regIso.valor : regIso.bit125.Substring(3, 6) + regIso.valor;
 
                                                     string registro2 = isoRegistro.registro;
                                                     Util.LOGDADOS("RESPOSTA ISO = " + registro2);
@@ -325,19 +339,19 @@ namespace ConveyISO
             Util.LOGENTRADA();
             string str = (string)null;
             bool flag1 = false;
-            Console.Write("Waiting for a connection... ");
+            //Console.Write("Waiting for a connection... ");
             try
             {
                 Util.LOGDADOS("Waiting for a connection...");
                 this.data = (string)null;
                 stream = client.GetStream();
-                bool flag2 = true;
-                do
+
+                while (true)
                 {
                     if (stream.DataAvailable)
-                        flag2 = false;
+                        return this.leDadosSocket(client, stream);
 
-                    Thread.Sleep(100);
+                    Thread.Sleep(1000);
 
                     if (GlobalVar.finalizar)
                     {
@@ -345,45 +359,30 @@ namespace ConveyISO
                         return "";
                     }
                 }
-                while (flag2);
-
-                if (stream.CanRead)
-                    flag1 = true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Exception: {0}", (object)ex);
                 return (string)null;
             }
-
-            if (flag1)
-                str = this.leDadosSocket(client, stream);
-
-            Util.LOGSAIDA();
-
-            return str;
         }
 
         public string leDadosSocket(TcpClient client, NetworkStream stream)
         {
             Util.LOGENTRADA();
-            int num1 = 999;
+            
             this.data = "";
             try
             {
                 Util.LOGCHECK("Vou ler stream do socket");
-                Util.LOGDADOS(" i = " + num1.ToString());
                 stream.Read(this.bytesTamanho, 0, 2);
                 int count1 = (int)this.bytesTamanho[0] + (int)this.bytesTamanho[1] * 256;
                 int num2 = (int)this.bytesTamanho[0];
                 int num3 = (int)this.bytesTamanho[1];
-                Util.LOGDADOS(" tam parte1 = " + num2.ToString());
-                Util.LOGDADOS(" tam parte1 = " + num3.ToString());
-                Util.LOGDADOS(" tam calculado = " + count1.ToString());
+                Thread.Sleep(100);
                 int count2 = stream.Read(this.bytes, 0, count1);
                 Thread.Sleep(100);
                 this.data += Encoding.ASCII.GetString(this.bytes, 0, count2);
-                Util.LOGCHECK("stream do socket lido");
                 Util.LOGDADOS(" i = " + count2.ToString());
                 Util.LOGDADOS(" data = " + this.data);
             }
@@ -404,7 +403,7 @@ namespace ConveyISO
             }
             else
             {
-                Console.WriteLine(string.Format("Received: {0}", (object)this.data));
+                //Console.WriteLine(string.Format("Received: {0}", (object)this.data));
                 this.data = this.data.ToUpper();
                 str = this.data;
             }
@@ -516,7 +515,7 @@ namespace ConveyISO
             {
                 Util.LOGENTRADA();
                 Encoding ascii = Encoding.ASCII;
-                byte[] numArray = new byte[256];
+                byte[] numArray = new byte[99999];
                 int bytes = s.Receive(numArray, numArray.Length, SocketFlags.None);
                 string registro = this.ConvertBytetoString(numArray, bytes);
                 Util.LOGDADOS(registro);
@@ -539,7 +538,7 @@ namespace ConveyISO
                 Socket socket = SocketConvey.connectSocket(ipcliente, porta);
                 if (socket == null)
                     return "Connection failed";
-                byte[] numArray = new byte[256];
+                byte[] numArray = new byte[99999];
                 socket.Send(bytes1, bytes1.Length, SocketFlags.None);
                 int bytes2 = socket.Receive(numArray, numArray.Length, SocketFlags.None);
                 string str = this.ConvertBytetoString(numArray, bytes2);

@@ -3,6 +3,15 @@ namespace ConveyISO
 {
     public partial class SocketConvey
     {
+        public bool IsNumeric(string x)
+        {
+            foreach (var item in x)
+                if (!char.IsNumber(item))
+                    return false;
+
+            return true;
+        }
+
         private string montaCancelamento(ISO8583 regIso, string trilha)
         {
             try
@@ -15,6 +24,12 @@ namespace ConveyISO
                 if (regIso.codLoja == "")
                 {
                     Util.LOGDADOS("codLoja vazio!");
+                    return "";
+                }
+
+                if (!IsNumeric(regIso.codLoja))
+                {
+                    Util.LOGDADOS("codLoja não numerico!");
                     return "";
                 }
 
@@ -33,6 +48,12 @@ namespace ConveyISO
                 if (regIso.terminal.Length < 4 )
                 {
                     Util.LOGDADOS("terminal menor de 4 chars!");
+                    return "";
+                }
+
+                if (!IsNumeric(regIso.terminal))
+                {
+                    Util.LOGDADOS("terminal não numerico!");
                     return "";
                 }
 

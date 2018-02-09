@@ -24,6 +24,12 @@ namespace ConveyISO
                     return "";
                 }
 
+                if (!IsNumeric(regIso.codLoja))
+                {
+                    Util.LOGDADOS("codLoja não numerico!");
+                    return "";
+                }
+
                 if (regIso.terminal == "")
                 {
                     Util.LOGDADOS("terminal vazio!");
@@ -33,6 +39,12 @@ namespace ConveyISO
                 if (regIso.terminal.Length < 4)
                 {
                     Util.LOGDADOS("terminal menor de 4 chars!");
+                    return "";
+                }
+
+                if (!IsNumeric(regIso.terminal))
+                {
+                    Util.LOGDADOS("terminal não numerico!");
                     return "";
                 }
 

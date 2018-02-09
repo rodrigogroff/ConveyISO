@@ -24,6 +24,12 @@ namespace ConveyISO
                     return "";
                 }
 
+                if (!IsNumeric(regIso.codLoja))
+                {
+                    Util.LOGDADOS("codLoja não numerico!");
+                    return "";
+                }
+
                 if (regIso.terminal == "")
                 {
                     Util.LOGDADOS("terminal vazio!");
@@ -35,7 +41,13 @@ namespace ConveyISO
                     Util.LOGDADOS("terminal menor de 4 chars!");
                     return "";
                 }
-                
+
+                if (!IsNumeric(regIso.terminal))
+                {
+                    Util.LOGDADOS("terminal não numerico!");
+                    return "";
+                }
+
                 string s = terminal.Substring(terminal.Length - 4, 4);
                 string str = (int.Parse(codLoja.Substring(codLoja.Length - 4, 4)) + int.Parse(s)).ToString("00000000");
 
