@@ -265,6 +265,8 @@ public class Util
                     GlobalVar.m_Log.WriteLine("-> [" + str6 + "] " + registro);
                     break;
             }
+
+            GlobalVar.m_Log.Flush();
         }
         catch (Exception ex)
         {
