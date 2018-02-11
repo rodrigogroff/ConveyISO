@@ -8,7 +8,7 @@ namespace ConveyISO
 {
     public partial class SocketConvey
     {
-        private Thread[] arrayThread = new Thread[100000];
+        private Thread[] arrayThread = new Thread[10];
         public IPAddress localAddr;
         public TcpListener server;
 
@@ -54,7 +54,7 @@ namespace ConveyISO
                 Util.LOGCHECK("Esperando Conexões.... >> " + GlobalVar.numThreads + "<<");
                 ++GlobalVar.numThreads;
 
-                if (GlobalVar.numThreads == 100000)
+                if (GlobalVar.numThreads == 10)
                     GlobalVar.numThreads = 0;
 
                 {
