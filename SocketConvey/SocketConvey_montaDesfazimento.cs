@@ -42,12 +42,12 @@ namespace ConveyISO
                     return "";
                 }
 
-                if (!IsNumeric(regIso.terminal))
+      /*          if (!IsNumeric(regIso.terminal))
                 {
                     Util.LOGDADOS("terminal não numerico!");
                     return "";
                 }
-
+                */
                 string s = terminal.Substring(terminal.Length - 4, 4);
                 string str = (int.Parse(codLoja.Substring(codLoja.Length - 4, 4)) + int.Parse(s)).ToString("00000000");
 
