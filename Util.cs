@@ -223,6 +223,10 @@ public class Util
     {
         if (!GlobalVar.debugApp)
             return;
+
+        GlobalVar.m_Log.WriteLine(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " [" + registro + "]"); 
+
+        /*
         try
         {
             stackFrame.GetMethod().ToString();
@@ -271,6 +275,7 @@ public class Util
         catch (Exception ex)
         {
         }
+        */
     }
 
     public static string DESCript(string dados, byte[] chaveC)
