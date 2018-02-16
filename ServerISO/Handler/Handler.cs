@@ -6,6 +6,26 @@ using System.Threading;
 
 public partial class ClientHandler
 {
+    public ClientHandler(TcpClient ClientSocket, int number)
+    {
+        ClientSocket.ReceiveTimeout = 1000; // 100 miliseconds
+        this.ClientSocket = ClientSocket;
+        networkStream = ClientSocket.GetStream();
+        bytes = new byte[ClientSocket.ReceiveBufferSize];
+        ContinueProcess = true;
+
+        sw = new StreamWriter("logFile_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "_" + GetRandomString(9) + ".txt", false)
+        {
+            AutoFlush = true
+        };
+
+        Log("");
+        Log("==========================================");
+        Log("CNET ISO vr 1.00 [" + number + "]");
+        Log("==========================================");
+        Log("");
+    }
+
     #region - code - 
 
     TcpClient ClientSocket;
@@ -36,19 +56,7 @@ public partial class ClientHandler
         return ret;
     }
 
-    public ClientHandler(TcpClient ClientSocket)
-    {
-        ClientSocket.ReceiveTimeout = 1000; // 100 miliseconds
-        this.ClientSocket = ClientSocket;
-        networkStream = ClientSocket.GetStream();
-        bytes = new byte[ClientSocket.ReceiveBufferSize];
-        ContinueProcess = true;
-
-        sw = new StreamWriter("logFile_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "_" + GetRandomString(9) + ".txt", false)
-        {
-            AutoFlush = true
-        };
-    }
+    
 
     public void Process()
     {
@@ -107,7 +115,12 @@ public partial class ClientHandler
 
     public void Log(ISO8583 isoRegistro)
     {
-        Log(" ISO8583-DETALHES DO REGISTRO \r\n         ======================================================== \r\n         Registro Iso : codigo       =" + isoRegistro.codigo + "\r\n         Bits preenchidos :          =" + isoRegistro.relacaoBits + "\r\n         bit( 3  ) - Codigo Proc.    =" + isoRegistro.codProcessamento + "\r\n         bit( 4  ) - valor           =" + isoRegistro.valor + "\r\n         bit( 7  ) - datahora        =" + isoRegistro.datetime + "\r\n         bit( 11 ) - NSU Origem      =" + isoRegistro.nsuOrigem + "\r\n         bit( 13 ) - data            =" + isoRegistro.Date + "\r\n         bit( 22 ) - modo captura    =" + isoRegistro.bit22 + "\r\n         bit( 35 ) - trilha          =" + isoRegistro.trilha2 + "\r\n         bit( 37 ) - nsu alternativo =" + isoRegistro.nsu + "\r\n         bit( 39 ) - codResposta     =" + isoRegistro.codResposta + "\r\n         bit( 41 ) - terminal        =" + isoRegistro.terminal + "\r\n         bit( 42 ) - codigoLoja      =" + isoRegistro.codLoja + "\r\n         bit( 49 ) - codigo moeda    =" + isoRegistro.bit49 + "\r\n         bit( 52 ) - Senha           =" + isoRegistro.senha + "\r\n         bit( 62 ) - Dados transacao =" + isoRegistro.bit62 + "\r\n         bit( 63 ) - Dados transacao =" + isoRegistro.bit63 + "\r\n         bit( 64 ) - Dados transacao =" + isoRegistro.bit64 + "\r\n         bit( 90 ) - dados original  =" + isoRegistro.bit90 + "\r\n         bit( 125 )- NSU original    =" + isoRegistro.bit125 + "\r\n         bit( 127 )- NSU             =" + isoRegistro.bit127 + "\r\n         ======================================================== \r\n");
+        // somente no disco!
+
+        var dados = " ISO8583-DETALHES DO REGISTRO \r\n         ======================================================== \r\n         Registro Iso : codigo       =" + isoRegistro.codigo + "\r\n         Bits preenchidos :          =" + isoRegistro.relacaoBits + "\r\n         bit( 3  ) - Codigo Proc.    =" + isoRegistro.codProcessamento + "\r\n         bit( 4  ) - valor           =" + isoRegistro.valor + "\r\n         bit( 7  ) - datahora        =" + isoRegistro.datetime + "\r\n         bit( 11 ) - NSU Origem      =" + isoRegistro.nsuOrigem + "\r\n         bit( 13 ) - data            =" + isoRegistro.Date + "\r\n         bit( 22 ) - modo captura    =" + isoRegistro.bit22 + "\r\n         bit( 35 ) - trilha          =" + isoRegistro.trilha2 + "\r\n         bit( 37 ) - nsu alternativo =" + isoRegistro.nsu + "\r\n         bit( 39 ) - codResposta     =" + isoRegistro.codResposta + "\r\n         bit( 41 ) - terminal        =" + isoRegistro.terminal + "\r\n         bit( 42 ) - codigoLoja      =" + isoRegistro.codLoja + "\r\n         bit( 49 ) - codigo moeda    =" + isoRegistro.bit49 + "\r\n         bit( 52 ) - Senha           =" + isoRegistro.senha + "\r\n         bit( 62 ) - Dados transacao =" + isoRegistro.bit62 + "\r\n         bit( 63 ) - Dados transacao =" + isoRegistro.bit63 + "\r\n         bit( 64 ) - Dados transacao =" + isoRegistro.bit64 + "\r\n         bit( 90 ) - dados original  =" + isoRegistro.bit90 + "\r\n         bit( 125 )- NSU original    =" + isoRegistro.bit125 + "\r\n         bit( 127 )- NSU             =" + isoRegistro.bit127 + "\r\n         ======================================================== \r\n";
+        var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " {" + dados + "}";
+
+        sw.WriteLine(st);
     }
 
     #endregion
@@ -203,7 +216,7 @@ public partial class ClientHandler
 
     private void ProcessDataReceived()
     {
-        bool bQuit = false;
+        bool bFinaliza = false;
 
         try
         {
@@ -211,11 +224,11 @@ public partial class ClientHandler
 
             msgReceived.Clear();
             
-            Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "< (tam:" + dadosRecebidos.Length + ")");
+            Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "<");
 
             if (dadosRecebidos.Length <= 20)
             {
-                Log("Registro recebido invalido! (muito pequeno)");
+                Log("Registro recebido invalido! (muito pequeno: " + dadosRecebidos.Length + ")");
             }
             else
             {
@@ -243,8 +256,6 @@ public partial class ClientHandler
 
                         if (isoCode == "0200" && (isoCodProc == "002000" || isoCodProc == "002800"))
                         {
-                            Log("Registro 0200 detectado!");
-
                             #region - code - 
 
                             using (var tcpClient = new TcpClient())
@@ -328,12 +339,10 @@ public partial class ClientHandler
                             #endregion
 
                             // continua depois via 202
-                            bQuit = false;
+                            bFinaliza = false;
                         }
                         else if (isoCode == "0202")
                         {
-                            Log("Registro 0202 detectado!");
-
                             #region - code - 
 
                             using (var tcpClient = new TcpClient())
@@ -344,13 +353,10 @@ public partial class ClientHandler
 
                             #endregion
 
-                            // encerra por aqui
-                            bQuit = true;
+                            bFinaliza = true;
                         }
                         else if (isoCode == "0400" || isoCode == "0420")
                         {
-                            Log("Registro 400 || 420 detectado!");
-
                             #region - 400 || 420 - 
 
                             string codigoIso, strRegIso;
@@ -418,13 +424,10 @@ public partial class ClientHandler
 
                             #endregion
 
-                            // encerra por aqui
-                            bQuit = true;
+                            bFinaliza = true;
                         }
                         else
-                        {
-                            bQuit = true;
-                        }
+                            bFinaliza = true;
                     }
                 }
             }
@@ -432,16 +435,18 @@ public partial class ClientHandler
         catch (SystemException ex)
         {
             Log("ProcessDataReceived SystemException " + ex.ToString());
-            bQuit = true;
+            bFinaliza = true;
         }
         catch (Exception ex)
         {
             Log("ProcessDataReceived Exception " + ex.ToString());
-            bQuit = true;
+            bFinaliza = true;
         }
         
-        if (bQuit)
+        if (bFinaliza)
         {
+            Log("ProcessDataReceived FINALIZADO ");
+
             networkStream.Close();
             ClientSocket.Close();
             ContinueProcess = false;

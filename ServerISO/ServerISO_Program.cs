@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Net.Sockets;
-using System.Text;
 using System.Collections;
 using System.Threading;
 
@@ -114,7 +112,7 @@ public class SynchronousSocketListener
 
     public static int Main(String[] args)
     {
-        Console.WriteLine("\nCNET ISO -> Port: " + portNum);
+        Console.WriteLine("\nCNET ISO [" + portNum + "]");
 
         StartListening();
 
@@ -150,8 +148,8 @@ public class SynchronousSocketListener
 
                 if (handler != null)
                 {
-                    Console.WriteLine("Client#{0} accepted!", ++ClientNbr);
-                    ConnectionPool.Enqueue(new ClientHandler(handler));
+                    ++ClientNbr;
+                    ConnectionPool.Enqueue(new ClientHandler(handler, ClientNbr));
                 }
 
                 Thread.Sleep(100);
