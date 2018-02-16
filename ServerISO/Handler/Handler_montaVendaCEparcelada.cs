@@ -92,7 +92,7 @@ public partial class ClientHandler
         }
         catch (System.Exception ex)
         {
-            Log(ex.ToString());
+            LogFalha(ex.ToString());
             return "";
         }
     }

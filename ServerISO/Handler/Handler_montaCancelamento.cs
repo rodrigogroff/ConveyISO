@@ -67,7 +67,7 @@ public partial class ClientHandler
         }
         catch (System.Exception ex)
         {
-            Log(ex.ToString());
+            LogFalha("montaCancelamento exception: " + ex.ToString());
             return "";
         }
     }

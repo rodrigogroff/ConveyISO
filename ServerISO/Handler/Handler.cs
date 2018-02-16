@@ -8,13 +8,15 @@ public partial class ClientHandler
 {
     public ClientHandler(TcpClient ClientSocket, int number)
     {
-        ClientSocket.ReceiveTimeout = 1000; // 100 miliseconds
+        ClientSocket.ReceiveTimeout = 1000;
         this.ClientSocket = ClientSocket;
         networkStream = ClientSocket.GetStream();
         bytes = new byte[ClientSocket.ReceiveBufferSize];
         ContinueProcess = true;
 
-        sw = new StreamWriter("logFile_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "_" + GetRandomString(9) + ".txt", false)
+        strLogFile = "logFile_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "_" + GetRandomString(9) + ".txt";
+        
+        sw = new StreamWriter(strLogFile, false)
         {
             AutoFlush = true
         };
@@ -30,13 +32,12 @@ public partial class ClientHandler
 
     TcpClient ClientSocket;
     NetworkStream networkStream;
+    StringBuilder msgReceived = new StringBuilder();
+    Random random = new Random();
 
+    string strLogFile = "";
     bool ContinueProcess = false;
     byte[] bytes;
-
-    StringBuilder msgReceived = new StringBuilder();
-
-    Random random = new Random();
 
     int RandomNumber(int min, int max)
     {
@@ -55,8 +56,6 @@ public partial class ClientHandler
 
         return ret;
     }
-
-    
 
     public void Process()
     {
@@ -113,6 +112,23 @@ public partial class ClientHandler
         Console.WriteLine(st);
     }
 
+    int numFalha = 1;
+
+    public void LogFalha(string dados)
+    {
+        var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " {" + dados + "}";
+
+        var swFalha = new StreamWriter("FALHA" + numFalha + strLogFile, false)
+        {
+            AutoFlush = true
+        };
+
+        numFalha++;
+
+        swFalha.WriteLine(st);
+        Console.WriteLine(st);
+    }
+
     public void Log(ISO8583 isoRegistro)
     {
         // somente no disco!
@@ -140,12 +156,12 @@ public partial class ClientHandler
         }
         catch (SocketException ex)
         {
-            Log("enviaDadosCNET SocketException : " + ex.Message);
+            LogFalha("enviaDadosCNET SocketException : " + ex.Message);
             throw ex;
         }
         catch (Exception ex)
         {
-            Log("enviaDadosCNET Exception : " + ex.ToString());
+            LogFalha("enviaDadosCNET Exception : " + ex.ToString());
             throw ex;
         }
     }
@@ -172,12 +188,12 @@ public partial class ClientHandler
         }
         catch (SocketException ex)
         {
-            Log("enviaRecebeDadosCNET SocketException : " + ex.Message);
+            LogFalha("enviaRecebeDadosCNET SocketException : " + ex.Message);
             throw ex;
         }
         catch (Exception ex)
         {
-            Log("enviaRecebeDadosCNET Exception : " + ex.ToString());
+            LogFalha("enviaRecebeDadosCNET Exception : " + ex.ToString());
             throw ex;
         }
     }
@@ -202,12 +218,12 @@ public partial class ClientHandler
         }
         catch (SocketException ex)
         {
-            Log("enviaDadosEXPRESS SocketException : " + ex.Message);
+            LogFalha("enviaDadosEXPRESS SocketException : " + ex.Message);
             throw ex;
         }
         catch (Exception ex)
         {
-            Log("enviaDadosEXPRESS Exception : " + ex.ToString());
+            LogFalha("enviaDadosEXPRESS Exception : " + ex.ToString());
             throw ex;
         }
     }
@@ -235,7 +251,7 @@ public partial class ClientHandler
                 var isoCode = dadosRecebidos.Substring(0, 4);
 
                 Log("isoCode " + isoCode);
-
+                
                 if (isoCode != "0200" && isoCode != "0202" && isoCode != "0400" && isoCode != "0420")
                 {
                     Log("Código de processamento inválido!");
@@ -258,97 +274,116 @@ public partial class ClientHandler
                         {
                             #region - code - 
 
-                            using (var tcpClient = new TcpClient())
+                            using (var tcpClient = new TcpClient("localhost", 2000))
                             {
-                                tcpClient.Connect("localhost", 2000);
-
-                                // --------------------------------
-                                // processamento no cnet server VENDA
-                                // --------------------------------
-
-                                #region - code - 
+                                // montagem
 
                                 string registroCNET = !(regIso.codProcessamento == "002000") ?
                                                     montaCNET_VendaCEparcelada(ref regIso) :
                                                     montaCNET_VendaCE(regIso);
 
-                                // TODO!
-                                // verificar retorno!!!
-
-                                var dadosRecCNET_200 = enviaRecebeDadosCNET(tcpClient, registroCNET);
-
-                                #endregion
-
-                                // --------------------------------
-                                // preparação 210 EXPRESS
-                                // --------------------------------
-
-                                #region - code - 
-
-                                var Iso210 = new ISO8583
+                                if (registroCNET == null)
                                 {
-                                    codResposta = dadosRecCNET_200.Substring(2, 2),
-                                    bit127 = "000" + dadosRecCNET_200.Substring(7, 6),
-                                    nsuOrigem = regIso.nsuOrigem,
-                                    codProcessamento = regIso.codProcessamento,
-                                    codigo = "0210",
-                                    valor = regIso.valor,
-                                    terminal = regIso.terminal,
-                                    codLoja = regIso.codLoja
-                                };
-
-                                if (regIso.codProcessamento != "002000")
-                                    Iso210.bit63 = regIso.bit62;
-
-                                string str4, str5, str6;
-
-                                if (regIso.trilha2.Trim().Length == 0)
-                                {
-                                    str4 = "999999999999999999999999999";
-                                    str5 = "999999";
-                                    str6 = "999999";
+                                    LogFalha(isoCode + " montaCNET_Venda nulo");
                                 }
-                                else if (regIso.trilha2.Trim().Length == 27)
+                                else if (registroCNET.Length < 20)
                                 {
-                                    str4 = regIso.trilha2.Trim();
-                                    str5 = regIso.trilha2.Trim().Substring(6, 6);
-                                    str6 = regIso.trilha2.Trim().Substring(12, 6);
+                                    LogFalha(isoCode + " montaCNET_Venda tamanho inválido");
                                 }
                                 else
                                 {
-                                    str5 = regIso.trilha2.Substring(17, 6);
-                                    str6 = regIso.trilha2.Substring(23, 6);
-                                    str4 = ("999999" + str5 + str6 + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0');
+                                    // --------------------------------
+                                    // processamento no cnet server VENDA
+                                    // --------------------------------
+
+                                    var dadosRecCNET_200 = enviaRecebeDadosCNET(tcpClient, registroCNET);
+                                                                        
+                                    // --------------------------------
+                                    // cria 210 EXPRESS
+                                    // --------------------------------
+
+                                    #region - code - 
+
+                                    var Iso210 = new ISO8583
+                                    {
+                                        codResposta = dadosRecCNET_200.Substring(2, 2),
+                                        bit127 = "000" + dadosRecCNET_200.Substring(7, 6),
+                                        nsuOrigem = regIso.nsuOrigem,
+                                        codProcessamento = regIso.codProcessamento,
+                                        codigo = "0210",
+                                        valor = regIso.valor,
+                                        terminal = regIso.terminal,
+                                        codLoja = regIso.codLoja
+                                    };
+
+                                    if (regIso.codProcessamento != "002000")
+                                        Iso210.bit63 = regIso.bit62;
+
+                                    string str4, str5, str6;
+
+                                    if (regIso.trilha2.Trim().Length == 0)
+                                    {
+                                        str4 = "999999999999999999999999999";
+                                        str5 = "999999";
+                                        str6 = "999999";
+                                    }
+                                    else if (regIso.trilha2.Trim().Length == 27)
+                                    {
+                                        str4 = regIso.trilha2.Trim();
+                                        str5 = regIso.trilha2.Trim().Substring(6, 6);
+                                        str6 = regIso.trilha2.Trim().Substring(12, 6);
+                                    }
+                                    else
+                                    {
+                                        str5 = regIso.trilha2.Substring(17, 6);
+                                        str6 = regIso.trilha2.Substring(23, 6);
+                                        str4 = ("999999" + str5 + str6 + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0');
+                                    }
+
+                                    Iso210.bit62 = !(dadosRecCNET_200.Substring(2, 2) == "00") ?
+                                        dadosRecCNET_200.Substring(73, 20) :
+                                        str5 + str6 + str4.Substring(18, 3) + dadosRecCNET_200.Substring(27, 40);
+
+                                    Log(Iso210);
+
+                                    #endregion
+
+                                    // --------------------------------
+                                    // envia 210 EXPRESS
+                                    // --------------------------------
+
+                                    enviaDadosEXPRESS(Iso210.registro);
                                 }
-
-                                Iso210.bit62 = !(dadosRecCNET_200.Substring(2, 2) == "00") ?
-                                    dadosRecCNET_200.Substring(73, 20) :
-                                    str5 + str6 + str4.Substring(18, 3) + dadosRecCNET_200.Substring(27, 40);
-
-                                Log(Iso210);
-
-                                #endregion
-
-                                // --------------------------------
-                                // envio 210 EXPRESS
-                                // --------------------------------
-
-                                enviaDadosEXPRESS(Iso210.registro);
                             }
 
                             #endregion
-
-                            // continua depois via 202
-                            bFinaliza = false;
+                                                        
+                            bFinaliza = false; // continua depois via 202
                         }
                         else if (isoCode == "0202")
                         {
                             #region - code - 
 
-                            using (var tcpClient = new TcpClient())
+                            using (var tcpClient = new TcpClient("localhost", 2000))
                             {
-                                tcpClient.Connect("localhost", 2000);
-                                enviaDadosCNET(tcpClient, montaConfirmacaoCE(regIso));
+                                var strRegIso = montaConfirmacaoCE(regIso);
+
+                                if (strRegIso == null)
+                                {
+                                    LogFalha(isoCode + " montaDesfazimento / montaCancelamento nulo");
+                                }
+                                else if (strRegIso.Length < 20)
+                                {
+                                    LogFalha(isoCode + " montaDesfazimento / montaCancelamento tamanho inválido");
+                                }
+                                else
+                                {
+                                    // --------------------------------
+                                    // processamento no cnet server CONF
+                                    // --------------------------------
+
+                                    enviaDadosCNET(tcpClient, montaConfirmacaoCE(regIso));
+                                }
                             }
 
                             #endregion
@@ -361,7 +396,9 @@ public partial class ClientHandler
 
                             string codigoIso, strRegIso;
 
-                            if (dadosRecebidos.Substring(0, 4) == "0400")
+                            // montagem
+
+                            if (isoCode == "0400")
                             {
                                 codigoIso = "0410";
                                 strRegIso = montaCancelamento(regIso, "012345678901234567890123456");
@@ -372,52 +409,68 @@ public partial class ClientHandler
                                 strRegIso = montaDesfazimento(regIso);
                             }
 
-                            if (string.IsNullOrEmpty(strRegIso))
+                            Log("codigoIso " + codigoIso);
+
+                            if (strRegIso == null)
                             {
-                                Log("Falha na desmontagem!");
+                                LogFalha(isoCode + " montaDesfazimento / montaCancelamento nulo" );
                             }
                             else if (strRegIso.Length < 20)
                             {
-                                Log("Falha na desmontagem! 2");
+                                LogFalha(isoCode + " montaDesfazimento / montaCancelamento tamanho inválido");
                             }
                             else
                             {
-                                using (var tcpClient = new TcpClient())
+                                using (var tcpClient = new TcpClient("localhost", 2000))
                                 {
+                                    // --------------------------------
+                                    // processamento no cnet server DESFAZ
+                                    // --------------------------------
+
                                     string dadosRec400 = enviaRecebeDadosCNET(tcpClient, strRegIso);
 
-                                    if (dadosRec400 == "")
+                                    if (codigoIso == "0410")
                                     {
-                                        Log("Recebeu ISO vazio");
-                                    }
-                                    else if (dadosRec400.Length < 27)
-                                    {
-                                        Log("Recebeu ISO tamanho incorreto");
+                                        
+                                        // cancelamento
+
+                                        if (dadosRec400 == "")
+                                        {
+                                            Log(isoCode + "Recebeu ISO vazio");
+                                        }
+                                        else if (dadosRec400.Length < 27)
+                                        {
+                                            Log(isoCode + "Recebeu ISO tamanho incorreto");
+                                        }
+                                        else
+                                        {
+                                            dadosRec400 = dadosRec400.PadRight(200, ' ');
+
+                                            var isoRegistro = new ISO8583
+                                            {
+                                                codigo = codigoIso,
+                                                codProcessamento = regIso.codProcessamento,
+                                                codLoja = regIso.codLoja,
+                                                terminal = regIso.terminal,
+                                                codResposta = dadosRec400.Substring(2, 2),
+                                                bit127 = "000" + dadosRec400.Substring(21, 6),
+                                                nsuOrigem = regIso.nsuOrigem,
+                                            };
+
+                                            Log("Montagem Bit 62");
+
+                                            isoRegistro.bit62 = !(dadosRec400.Substring(0, 4) == "0400") ?
+                                                dadosRec400.Substring(7, 6) + regIso.valor :
+                                                regIso.bit125.Substring(3, 6) + regIso.valor;
+
+                                            Log(isoRegistro);
+
+                                            enviaDadosEXPRESS(isoRegistro.registro);
+                                        }
                                     }
                                     else
                                     {
-                                        dadosRec400 = dadosRec400.PadRight(200, ' ');
-
-                                        var isoRegistro = new ISO8583
-                                        {
-                                            codigo = codigoIso,
-                                            codProcessamento = regIso.codProcessamento,
-                                            codLoja = regIso.codLoja,
-                                            terminal = regIso.terminal,
-                                            codResposta = dadosRec400.Substring(2, 2),
-                                            bit127 = "000" + dadosRec400.Substring(21, 6),
-                                            nsuOrigem = regIso.nsuOrigem,
-                                        };
-
-                                        Log("Montagem Bit 62");
-
-                                        isoRegistro.bit62 = !(dadosRec400.Substring(0, 4) == "0400") ?
-                                            dadosRec400.Substring(7, 6) + regIso.valor :
-                                            regIso.bit125.Substring(3, 6) + regIso.valor;
-
-                                        Log(isoRegistro);
-
-                                        enviaDadosEXPRESS(isoRegistro.registro);
+                                        // desfazimento não devolve EXPRESS
                                     }
                                 }
                             }
@@ -434,12 +487,12 @@ public partial class ClientHandler
         }
         catch (SystemException ex)
         {
-            Log("ProcessDataReceived SystemException " + ex.ToString());
+            LogFalha("ProcessDataReceived SystemException " + ex.ToString());
             bFinaliza = true;
         }
         catch (Exception ex)
         {
-            Log("ProcessDataReceived Exception " + ex.ToString());
+            LogFalha("ProcessDataReceived Exception " + ex.ToString());
             bFinaliza = true;
         }
         

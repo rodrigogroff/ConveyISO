@@ -250,6 +250,15 @@ public class ClientHandler
 
                 bQuit = true;
             }
+            else if (dadosRecebidos.StartsWith("05CEDF"))
+            {
+                var resp = "0";
+
+                byte[] sendBytes = Encoding.ASCII.GetBytes(resp);
+                networkStream.Write(sendBytes, 0, sendBytes.Length);
+
+                bQuit = true;
+            }
             else
                 bQuit = true;
         }

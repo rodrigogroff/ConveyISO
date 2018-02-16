@@ -6,8 +6,11 @@ public partial class ClientHandler
         try
         {
             string codLoja = regIso.codLoja;
+
             Log("CodEstabelecimento: " + codLoja);
+
             string terminal = regIso.terminal;
+
             Log("codigo Terminal : " + terminal);
 
             if (regIso.codLoja == "")
@@ -66,7 +69,7 @@ public partial class ClientHandler
         }
         catch (System.Exception ex)
         {
-            Log(ex.ToString());
+            LogFalha("montaCNET_VendaCE exception: " + ex.ToString());
             return "";
         }            
     }
