@@ -1,7 +1,7 @@
 ﻿
 public partial class ISO8583
 {
-    private string monta_registro()
+    public string monta_registro()
     {
         string str = "" + this.m_codigo + this.mapaBit1;
 

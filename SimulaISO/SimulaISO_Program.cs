@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace SimulaISO
 {
-    class Program
+    class SimulaISO_Program
     {
         private const int portNum = 2700;
 
         static void Main(string[] args)
         {
-            Envia200();
+            Envia200_202();
         }
 
-        static void Envia200()
+        static void Envia200_202()
         {
             var tcpClient = new TcpClient();
 
@@ -25,40 +25,40 @@ namespace SimulaISO
                 tcpClient.Connect("localhost", portNum);
                 NetworkStream networkStream = tcpClient.GetStream();
 
-                if (networkStream.CanWrite && networkStream.CanRead)
+                if (networkStream.CanWrite)
                 {
-                    var DataToSend = "";
+                    var DataToSend = "0200B238040020C0100000000000000000000020000000000033820215105755150094105755021502137826766009622991348012650921          CX00000300000000000680875CFDE84D7B26543";
 
-                    while (DataToSend != "quit")
                     {
-                        Console.WriteLine("\nType a text to be sent:");
-                        DataToSend = Console.ReadLine();
-                        if (DataToSend.Length == 0) break;
-
                         Byte[] sendBytes = Encoding.ASCII.GetBytes(DataToSend);
                         networkStream.Write(sendBytes, 0, sendBytes.Length);
+                    }
 
+                    Console.WriteLine("\nEnviado " + DataToSend);
+
+                    {
                         // Reads the NetworkStream into a byte buffer.
                         byte[] bytes = new byte[tcpClient.ReceiveBufferSize];
                         int BytesRead = networkStream.Read(bytes, 0, (int)tcpClient.ReceiveBufferSize);
-
+                                        
                         // Returns the data received from the host to the console.
                         string returndata = Encoding.ASCII.GetString(bytes, 0, BytesRead);
-                        Console.WriteLine("This is what the host returned to you: \r\n{0}", returndata);
+                        Console.WriteLine("\nRecebido " + returndata);
                     }
-                    networkStream.Close();
-                    tcpClient.Close();
+                        
+                    DataToSend = "0202B238000002C0000400000000000000020020000000000033820215105811150094105755021500CX000003000000000006808027826766009622991348012650921009000000067";
+
+                    {
+                        Byte[] sendBytes = Encoding.ASCII.GetBytes(DataToSend);
+                        networkStream.Write(sendBytes, 0, sendBytes.Length);
+                    }
+
+                    Console.WriteLine("\nEnviado " + DataToSend);
                 }
-                else if (!networkStream.CanRead)
-                {
-                    Console.WriteLine("You can not write data to this stream");
-                    tcpClient.Close();
-                }
-                else if (!networkStream.CanWrite)
-                {
-                    Console.WriteLine("You can not read data from this stream");
-                    tcpClient.Close();
-                }
+                
+                networkStream.Close();
+                tcpClient.Close();
+                
             }
             catch (SocketException)
             {

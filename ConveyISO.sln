@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulaISO", "SimulaISO\Simu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerISO", "ServerISO\ServerISO.csproj", "{A00B6157-E72A-49C4-A328-C4E96341EF4F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerCNET", "ServerCNET\ServerCNET.csproj", "{4E3AA510-9D83-4513-9E78-1C2A7A2191DA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{A00B6157-E72A-49C4-A328-C4E96341EF4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A00B6157-E72A-49C4-A328-C4E96341EF4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A00B6157-E72A-49C4-A328-C4E96341EF4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E3AA510-9D83-4513-9E78-1C2A7A2191DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E3AA510-9D83-4513-9E78-1C2A7A2191DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E3AA510-9D83-4513-9E78-1C2A7A2191DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E3AA510-9D83-4513-9E78-1C2A7A2191DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -42,10 +42,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Handler\Handler_montaVendaCEparcelada.cs" />
+    <Compile Include="Handler\Handler_montaVendaCE.cs" />
     <Compile Include="ISO\ISO8583.cs" />
     <Compile Include="ISO\ISO8583_desmontaRegistro.cs" />
     <Compile Include="ISO\ISO8583_montaRegistro.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="ServerISO_Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -4,7 +4,7 @@ using System.Globalization;
 
 public partial class ISO8583
 {
-    private void desmonta_registro(string regISO)
+    public void desmonta_registro(string regISO)
     {
         int num1 = 1,
             num2 = 4,

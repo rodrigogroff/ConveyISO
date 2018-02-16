@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{251A1E90-E14B-42D4-9EA7-1637CA998F7E}</ProjectGuid>
+    <ProjectGuid>{4E3AA510-9D83-4513-9E78-1C2A7A2191DA}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>SimulaISO</RootNamespace>
-    <AssemblyName>SimulaISO</AssemblyName>
+    <RootNamespace>ServerCNET</RootNamespace>
+    <AssemblyName>ServerCNET</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -42,10 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ISO\ISO8583.cs" />
-    <Compile Include="ISO\ISO8583_desmontaRegistro.cs" />
-    <Compile Include="ISO\ISO8583_montaRegistro.cs" />
-    <Compile Include="SimulaISO_Program.cs" />
+    <Compile Include="ServerCNET_Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
