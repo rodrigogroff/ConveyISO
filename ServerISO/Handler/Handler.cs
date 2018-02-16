@@ -246,9 +246,13 @@ public partial class ClientHandler
             
             Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "<");
 
-            if (dadosRecebidos.Length <= 20)
+            if (dadosRecebidos.Length == 0)
             {
-                Log("Registro recebido invalido! (muito pequeno: " + dadosRecebidos.Length + ")");
+                // desprezar
+            }
+            else if (dadosRecebidos.Length <= 20 && dadosRecebidos.Length > 4)
+            {
+                Log("Registro recebido tamanho invalido! (" + dadosRecebidos.Length + ")");
             }
             else
             {
