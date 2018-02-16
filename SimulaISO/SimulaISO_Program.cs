@@ -42,7 +42,7 @@ namespace SimulaISO
                         int BytesRead = networkStream.Read(bytes, 0, (int)tcpClient.ReceiveBufferSize);
                                         
                         // Returns the data received from the host to the console.
-                        string returndata = Encoding.ASCII.GetString(bytes, 0, BytesRead);
+                        string returndata = Encoding.UTF7.GetString(bytes, 0, BytesRead);
                         Console.WriteLine("\nRecebido " + returndata);
                     }
                         

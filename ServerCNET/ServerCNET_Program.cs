@@ -114,13 +114,7 @@ public class SynchronousSocketListener
 
     public static int Main(String[] args)
     {
-        Console.WriteLine("\nCNET Emulator server port...");
-        var customPort = Console.ReadLine();
-
-        if (customPort.Length > 0)
-            portNum = Convert.ToInt32(customPort);
-
-        Console.WriteLine("\nPort is: " + portNum);
+        Console.WriteLine("\nCNET Emulator server port: " + portNum);
 
         StartListening();
 
@@ -256,6 +250,8 @@ public class ClientHandler
 
                 bQuit = true;
             }
+            else
+                bQuit = true;
         }
 
         if (bQuit)

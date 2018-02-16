@@ -114,13 +114,7 @@ public class SynchronousSocketListener
 
     public static int Main(String[] args)
     {
-        Console.WriteLine("\nServer port...");
-        var customPort = Console.ReadLine();
-
-        if (customPort.Length > 0)
-            portNum = Convert.ToInt32(customPort);
-
-        Console.WriteLine("\nPort is: " + portNum);
+        Console.WriteLine("\nCNET ISO -> Port: " + portNum);
 
         StartListening();
 
@@ -157,7 +151,7 @@ public class SynchronousSocketListener
                 if (handler != null)
                 {
                     Console.WriteLine("Client#{0} accepted!", ++ClientNbr);
-                    ConnectionPool.Enqueue(new ClientHandler(handler, ClientNbr.ToString()));
+                    ConnectionPool.Enqueue(new ClientHandler(handler));
                 }
 
                 Thread.Sleep(100);
@@ -186,18 +180,36 @@ public partial class ClientHandler
     byte[] bytes;
 
     StringBuilder msgReceived = new StringBuilder();
-    string data = null, myNumber = "";
 
-    public ClientHandler(TcpClient ClientSocket, string myNum)
+    Random random = new Random();
+
+    int RandomNumber(int min, int max)
     {
-        myNumber = myNum;
+        Thread.Sleep(1);
+        return random.Next(min, max);
+    }
+
+    public string GetRandomString(int size)
+    {
+        Thread.Sleep(100);
+
+        var ret = "";
+
+        for (int t = 0; t < size; ++t)
+            ret += RandomNumber(0, 9).ToString();
+
+        return ret;
+    }
+
+    public ClientHandler(TcpClient ClientSocket)
+    {
         ClientSocket.ReceiveTimeout = 1000; // 100 miliseconds
         this.ClientSocket = ClientSocket;
         networkStream = ClientSocket.GetStream();
         bytes = new byte[ClientSocket.ReceiveBufferSize];
         ContinueProcess = true;
 
-        sw = new StreamWriter("logFile_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "_" + myNum + ".txt", false)
+        sw = new StreamWriter("logFile_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "_" + GetRandomString(9) + ".txt", false)
         {
             AutoFlush = true
         };
@@ -255,7 +267,7 @@ public partial class ClientHandler
     {
         var dadosRecebidos = msgReceived.ToString();
 
-        msgReceived = new StringBuilder();
+        msgReceived.Clear();
 
         bool bQuit = false;
 
@@ -276,7 +288,7 @@ public partial class ClientHandler
             }
             else
             {
-                ISO8583 regIso = new ISO8583(dadosRecebidos);
+                var regIso = new ISO8583(dadosRecebidos);
 
                 Log(regIso);
 
@@ -290,74 +302,90 @@ public partial class ClientHandler
                     {
                         Log("Registro 0200 detectado!");
 
-                        #region - processa no CNET_SERVER - 
+                        using (var tcpClient = new TcpClient())
+                        {
+                            tcpClient.Connect("localhost", 2000);
 
-                        string registroCNET = !(regIso.codProcessamento == "002000") ?
+                            // --------------------------------
+                            // processamento no cnet server VENDA
+                            // --------------------------------
+
+                            string registroCNET = !(regIso.codProcessamento == "002000") ?
                                                 montaCNET_VendaCEparcelada(ref regIso) :
                                                 montaCNET_VendaCE(regIso);
 
-                        var dadosRecCNET_200 = enviaRecebeDadosCNET(registroCNET);
+                            var dadosRecCNET_200 = enviaRecebeDadosCNET(tcpClient, registroCNET);
 
-                        var Iso210 = new ISO8583
-                        {
-                            codResposta = dadosRecCNET_200.Substring(2, 2),
-                            bit127 = "000" + dadosRecCNET_200.Substring(7, 6),
-                            nsuOrigem = regIso.nsuOrigem,
-                            codProcessamento = regIso.codProcessamento,
-                            codigo = "0210",
-                            valor = regIso.valor,
-                            terminal = regIso.terminal,
-                            codLoja = regIso.codLoja
-                        };
+                            // --------------------------------
+                            // preparação 210 EXPRESS
+                            // --------------------------------
 
-                        if (regIso.codProcessamento != "002000")
-                            Iso210.bit63 = regIso.bit62;
+                            var Iso210 = new ISO8583
+                            {
+                                codResposta = dadosRecCNET_200.Substring(2, 2),
+                                bit127 = "000" + dadosRecCNET_200.Substring(7, 6),
+                                nsuOrigem = regIso.nsuOrigem,
+                                codProcessamento = regIso.codProcessamento,
+                                codigo = "0210",
+                                valor = regIso.valor,
+                                terminal = regIso.terminal,
+                                codLoja = regIso.codLoja
+                            };
 
-                        string str4, str5, str6;
+                            if (regIso.codProcessamento != "002000")
+                                Iso210.bit63 = regIso.bit62;
 
-                        if (regIso.trilha2.Trim().Length == 0)
-                        {
-                            str4 = "999999999999999999999999999";
-                            str5 = "999999";
-                            str6 = "999999";
+                            string str4, str5, str6;
+
+                            if (regIso.trilha2.Trim().Length == 0)
+                            {
+                                str4 = "999999999999999999999999999";
+                                str5 = "999999";
+                                str6 = "999999";
+                            }
+                            else if (regIso.trilha2.Trim().Length == 27)
+                            {
+                                str4 = regIso.trilha2.Trim();
+                                str5 = regIso.trilha2.Trim().Substring(6, 6);
+                                str6 = regIso.trilha2.Trim().Substring(12, 6);
+                            }
+                            else
+                            {
+                                str5 = regIso.trilha2.Substring(17, 6);
+                                str6 = regIso.trilha2.Substring(23, 6);
+                                str4 = ("999999" + str5 + str6 + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0');
+                            }
+
+                            Iso210.bit62 = !(dadosRecCNET_200.Substring(2, 2) == "00") ?
+                                dadosRecCNET_200.Substring(73, 20) :
+                                str5 + str6 + str4.Substring(18, 3) + dadosRecCNET_200.Substring(27, 40);
+
+                            Log(Iso210);
+
+                            // --------------------------------
+                            // envio 210 EXPRESS
+                            // --------------------------------
+
+                            enviaDadosEXPRESS(Iso210.registro);
                         }
-                        else if (regIso.trilha2.Trim().Length == 27)
-                        {
-                            str4 = regIso.trilha2.Trim();
-                            str5 = regIso.trilha2.Trim().Substring(6, 6);
-                            str6 = regIso.trilha2.Trim().Substring(12, 6);
-                        }
-                        else
-                        {
-                            str5 = regIso.trilha2.Substring(17, 6);
-                            str6 = regIso.trilha2.Substring(23, 6);
-                            str4 = ("999999" + str5 + str6 + regIso.trilha2.Substring(29, 3)).PadLeft(27, '0');
-                        }
-
-                        Iso210.bit62 = !(dadosRecCNET_200.Substring(2, 2) == "00") ?
-                            dadosRecCNET_200.Substring(73, 20) :
-                            str5 + str6 + str4.Substring(18, 3) + dadosRecCNET_200.Substring(27, 40);
-
-                        Log(Iso210);
-
-                        #endregion
-
-                        enviaDadosEXPRESS(Iso210.registro);                        
-                    }                    
+                    }
                     else if (dadosRecebidos.Substring(0, 4) == "0202")
                     {
                         Log("Registro 0202 detectado!");
 
                         #region - processa no CNET_SERVER - 
 
-                        enviaDadosCNET(montaConfirmacaoCE(regIso));
+                        using (var tcpClient = new TcpClient())
+                        {
+                            tcpClient.Connect("localhost", 2000);
+                            enviaDadosCNET(tcpClient, montaConfirmacaoCE(regIso));
+                        }
 
                         #endregion
 
                         bQuit = true;
                     }
-                    else if (dadosRecebidos.Substring(0, 4) == "0400" ||
-                                                    dadosRecebidos.Substring(0, 4) == "0420")
+                    else if (dadosRecebidos.Substring(0, 4) == "0400" || dadosRecebidos.Substring(0, 4) == "0420")
                     {
                         Log("Registro 400 || 420 detectado!");
 
@@ -386,49 +414,54 @@ public partial class ClientHandler
                         }
                         else
                         {
-                            string dadosRec400 = enviaRecebeDadosCNET(strRegIso);
+                            using (var tcpClient = new TcpClient())
+                            {
+                                string dadosRec400 = enviaRecebeDadosCNET(tcpClient, strRegIso);
 
-                            if (dadosRec400 == "")
-                            {
-                                Log("Recebeu ISO vazio");
-                            }
-                            else if (dadosRec400.Length < 27)
-                            {
-                                Log("Recebeu ISO tamanho incorreto");
-                            }
-                            else
-                            {
-                                dadosRec400 = dadosRec400.PadRight(200, ' ');
-
-                                var isoRegistro = new ISO8583
+                                if (dadosRec400 == "")
                                 {
-                                    codigo = codigoIso,
-                                    codProcessamento = regIso.codProcessamento,
-                                    codLoja = regIso.codLoja,
-                                    terminal = regIso.terminal,
-                                    codResposta = dadosRec400.Substring(2, 2),
-                                    bit127 = "000" + dadosRec400.Substring(21, 6),
-                                    nsuOrigem = regIso.nsuOrigem,
-                                };
+                                    Log("Recebeu ISO vazio");
+                                }
+                                else if (dadosRec400.Length < 27)
+                                {
+                                    Log("Recebeu ISO tamanho incorreto");
+                                }
+                                else
+                                {
+                                    dadosRec400 = dadosRec400.PadRight(200, ' ');
 
-                                Log("Montagem Bit 62");
+                                    var isoRegistro = new ISO8583
+                                    {
+                                        codigo = codigoIso,
+                                        codProcessamento = regIso.codProcessamento,
+                                        codLoja = regIso.codLoja,
+                                        terminal = regIso.terminal,
+                                        codResposta = dadosRec400.Substring(2, 2),
+                                        bit127 = "000" + dadosRec400.Substring(21, 6),
+                                        nsuOrigem = regIso.nsuOrigem,
+                                    };
 
-                                isoRegistro.bit62 = !(dadosRec400.Substring(0, 4) == "0400") ? 
-                                    dadosRec400.Substring(7, 6) + regIso.valor :
-                                    regIso.bit125.Substring(3, 6) + regIso.valor;
+                                    Log("Montagem Bit 62");
 
-                                Log(isoRegistro);
+                                    isoRegistro.bit62 = !(dadosRec400.Substring(0, 4) == "0400") ?
+                                        dadosRec400.Substring(7, 6) + regIso.valor :
+                                        regIso.bit125.Substring(3, 6) + regIso.valor;
 
-                                enviaDadosEXPRESS(isoRegistro.registro);
+                                    Log(isoRegistro);
+
+                                    enviaDadosEXPRESS(isoRegistro.registro);
+                                }
                             }
                         }
 
                         #endregion
+
+                        bQuit = true;
                     }
                     else
                     {
                         bQuit = true;
-                    }
+                    }                        
                 }
             }
             
@@ -442,27 +475,33 @@ public partial class ClientHandler
         }
     }
 
-    public void enviaDadosCNET(string registroCNET)
+    public void enviaDadosCNET(TcpClient tcpClient, string registroCNET)
     {
         Log("enviaDadosCNET " + registroCNET);
 
-        using (var tcpClient = new TcpClient())
+        try
         {
-            tcpClient.Connect("localhost", 2000);
-            NetworkStream networkStream = tcpClient.GetStream();
+            var networkStream = tcpClient.GetStream();
 
             byte[] sendBytes = Encoding.ASCII.GetBytes(registroCNET);
             networkStream.Write(sendBytes, 0, sendBytes.Length);
         }
+        catch (SocketException ex)
+        {
+            Log("enviaDadosCNET SocketException : " + ex.Message);            
+        }
+        catch (Exception ex)
+        {
+            Log("enviaDadosCNET Exception : " + ex.ToString());            
+        }
     }
 
-    public string enviaRecebeDadosCNET(string registroCNET)
+    public string enviaRecebeDadosCNET(TcpClient tcpClient, string registroCNET)
     {
         Log("enviaRecebeDadosCNET (enviado) " + registroCNET);
 
-        using (var tcpClient = new TcpClient())
+        try
         {
-            tcpClient.Connect("localhost", 2000);
             NetworkStream networkStream = tcpClient.GetStream();
 
             byte[] sendBytes = Encoding.ASCII.GetBytes(registroCNET);
@@ -476,6 +515,16 @@ public partial class ClientHandler
             Log("enviaRecebeDadosCNET (recebido) " + dadosSocket);
 
             return dadosSocket;
+        }
+        catch (SocketException ex)
+        {
+            Log("enviaRecebeDadosCNET SocketException : " + ex.Message);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Log("enviaRecebeDadosCNET Exception : " + ex.ToString());
+            return null;
         }
     }
 
@@ -499,11 +548,11 @@ public partial class ClientHandler
         }
         catch (SocketException ex)
         {
-            Log("leDadosSocketEXPRESS EXCEPTION = Message : " + ex.Message);
+            Log("enviaDadosEXPRESS SocketException : " + ex.Message);
         }
         catch (Exception ex)
         {
-            Log("leDadosSocketEXPRESS = Message : " + ex.ToString());
+            Log("enviaDadosEXPRESS Exception : " + ex.ToString());
         }
     }
 
