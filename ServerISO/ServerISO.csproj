@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Handler\Handler.cs" />
     <Compile Include="Handler\Handler_montaDesfazimento.cs" />
     <Compile Include="Handler\Handler_montaCancelamento.cs" />
     <Compile Include="Handler\Handler_montaConfirmacaoCE.cs" />
