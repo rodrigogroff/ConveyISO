@@ -34,9 +34,7 @@ public partial class ClientHandler
 
             string s = terminal.Substring(terminal.Length - 4, 4);
             string str = (int.Parse(codLoja.Substring(codLoja.Length - 4, 4)) + int.Parse(s)).ToString("00000000");
-
-            Log("Num terminal atribuido: " + str);
-
+            
             // original
             //string registro = "05" + "CE" + "DF" + str.PadLeft(8, '0') + "0".PadLeft(43, '0') + regIso.valor.PadLeft(12, '0');
 
