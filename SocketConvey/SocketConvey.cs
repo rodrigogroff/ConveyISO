@@ -360,7 +360,7 @@ namespace ConveyISO
                     return "";
                 }
 
-                for (int t = 0; t < 20000; ++t)
+                for (int t = 0; t < 1000; ++t)
                 {
                     if (stream.DataAvailable)
                         return this.leDadosSocketEXPRESS(client);
