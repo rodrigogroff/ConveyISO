@@ -226,7 +226,7 @@ public class ClientHandler
 
     public void Log(string dados)
     {
-        Console.WriteLine(DateTime.Now.ToString("dd/MM/yyyy HH:mm:SS") + " {" + dados + "}");
+        Console.WriteLine(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " {tam:" + dados + "}");
     }
     
     #endregion
@@ -235,15 +235,31 @@ public class ClientHandler
     {
         var dadosRecebidos = msgReceived.ToString();
 
-        Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "< (" + dadosRecebidos.Length + ")");
+        msgReceived = new StringBuilder();
 
-        if (dadosRecebidos.StartsWith ("05CECE"))
+        var bQuit = false;
+
+        if (dadosRecebidos.Length == 0)
         {
-            var resp = "000000S00006720180215000067EMERSON CONRADO RIBEIRO                 004200                    000000000006156000096229913480015-02-201810:57:56068Saldo disponível no mês: 501,25 * Saldo disponível parcelado: 501,25";
-            
-            byte[] sendBytes = Encoding.ASCII.GetBytes(resp);
-            networkStream.Write(sendBytes, 0, sendBytes.Length);
+            bQuit = true;
+        }
+        else
+        {
+            Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "< (" + dadosRecebidos.Length + ")");
 
+            if (dadosRecebidos.StartsWith("05CECE"))
+            {
+                var resp = "000000S00006720180215000067EMERSON CONRADO RIBEIRO                 004200                    000000000006156000096229913480015-02-201810:57:56068Saldo disponível no mês: 501,25 * Saldo disponível parcelado: 501,25";
+
+                byte[] sendBytes = Encoding.ASCII.GetBytes(resp);
+                networkStream.Write(sendBytes, 0, sendBytes.Length);
+
+                bQuit = true;
+            }
+        }
+
+        if (bQuit)
+        {
             networkStream.Close();
             ClientSocket.Close();
             ContinueProcess = false;

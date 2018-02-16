@@ -129,7 +129,9 @@ public class SynchronousSocketListener
 
         return 0;
     }
-    
+
+    #region - code - 
+
     public static void StartListening()
     {
         var ConnectionPool = new ClientConnectionPool();
@@ -155,7 +157,7 @@ public class SynchronousSocketListener
                 if (handler != null)
                 {
                     Console.WriteLine("Client#{0} accepted!", ++ClientNbr);
-                    ConnectionPool.Enqueue(new ClientHandler(handler));
+                    ConnectionPool.Enqueue(new ClientHandler(handler, ClientNbr.ToString()));
                 }
 
                 Thread.Sleep(100);
@@ -169,6 +171,8 @@ public class SynchronousSocketListener
             Console.WriteLine(e.ToString());
         }
     }
+
+    #endregion
 }
 
 public partial class ClientHandler
@@ -182,15 +186,21 @@ public partial class ClientHandler
     byte[] bytes;
 
     StringBuilder msgReceived = new StringBuilder();
-    string data = null;
+    string data = null, myNumber = "";
 
-    public ClientHandler(TcpClient ClientSocket)
+    public ClientHandler(TcpClient ClientSocket, string myNum)
     {
+        myNumber = myNum;
         ClientSocket.ReceiveTimeout = 1000; // 100 miliseconds
         this.ClientSocket = ClientSocket;
         networkStream = ClientSocket.GetStream();
         bytes = new byte[ClientSocket.ReceiveBufferSize];
         ContinueProcess = true;
+
+        sw = new StreamWriter("logFile_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "_" + myNum + ".txt", false)
+        {
+            AutoFlush = true
+        };
     }
 
     public void Process()
@@ -224,9 +234,14 @@ public partial class ClientHandler
 
     #region - log_functions - 
 
+    StreamWriter sw;
+
     public void Log(string dados)
     {
-        Console.WriteLine(DateTime.Now.ToString("dd/MM/yyyy HH:mm:SS") + " {" + dados + "}");
+        var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " {" + dados + "}";
+
+        sw.WriteLine(st);
+        Console.WriteLine(st);
     }
 
     public void Log(ISO8583 isoRegistro)
@@ -239,8 +254,12 @@ public partial class ClientHandler
     private void ProcessDataReceived()
     {
         var dadosRecebidos = msgReceived.ToString();
-        
-        Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "< (" + dadosRecebidos.Length + ")");
+
+        msgReceived = new StringBuilder();
+
+        bool bQuit = false;
+
+        Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "< (tam:" + dadosRecebidos.Length + ")");
 
         if (dadosRecebidos.Length <= 20)
         {
@@ -269,6 +288,8 @@ public partial class ClientHandler
                 {
                     if (dadosRecebidos.Substring(0, 4) == "0200" && (regIso.codProcessamento == "002000" || regIso.codProcessamento == "002800"))
                     {
+                        Log("Registro 0200 detectado!");
+
                         #region - processa no CNET_SERVER - 
 
                         string registroCNET = !(regIso.codProcessamento == "002000") ?
@@ -319,19 +340,57 @@ public partial class ClientHandler
 
                         Log(Iso210);
 
+                        #endregion
+
                         enviaDadosEXPRESS(Iso210.registro);                        
                     }                    
+                    else if (dadosRecebidos.Substring(0, 4) == "0202")
+                    {
+                        Log("Registro 0202 detectado!");
+
+                        #region - processa no CNET_SERVER - 
+
+                        enviaDadosCNET(montaConfirmacaoCE(regIso));
+
+                        #endregion
+
+                        bQuit = true;
+                    }
+                    else
+                    {
+                        bQuit = true;
+                    }
                 }
             }
             
-            networkStream.Close();
-            ClientSocket.Close();
-            ContinueProcess = false;            
+            if (bQuit)
+            {
+                networkStream.Close();
+                ClientSocket.Close();
+                ContinueProcess = false;
+                sw.Close();
+            }            
+        }
+    }
+
+    public void enviaDadosCNET(string registroCNET)
+    {
+        Log("enviaDadosCNET " + registroCNET);
+
+        using (var tcpClient = new TcpClient())
+        {
+            tcpClient.Connect("localhost", 2000);
+            NetworkStream networkStream = tcpClient.GetStream();
+
+            byte[] sendBytes = Encoding.ASCII.GetBytes(registroCNET);
+            networkStream.Write(sendBytes, 0, sendBytes.Length);
         }
     }
 
     public string enviaRecebeDadosCNET(string registroCNET)
     {
+        Log("enviaRecebeDadosCNET " + registroCNET);
+
         using (var tcpClient = new TcpClient())
         {
             tcpClient.Connect("localhost", 2000);
@@ -352,6 +411,8 @@ public partial class ClientHandler
 
     public void enviaDadosEXPRESS(string Dados)
     {
+        Log("enviaDadosEXPRESS " + Dados);
+
         try
         {
             string str = string.Format("{0:X2}", (object)Dados.Length).PadLeft(4, '0');
