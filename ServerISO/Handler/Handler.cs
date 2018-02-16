@@ -6,6 +6,8 @@ using System.Threading;
 
 public partial class ClientHandler
 {
+    public string localHost = "127.0.0.1";
+
     public ClientHandler(TcpClient _clientSocket, int number)
     {
         this.ClientSocket = _clientSocket;
@@ -276,7 +278,7 @@ public partial class ClientHandler
                         {
                             #region - code - 
 
-                            using (var tcpClient = new TcpClient("localhost", 2000))
+                            using (var tcpClient = new TcpClient(localHost, 2000))
                             {
                                 // montagem
 
@@ -366,7 +368,7 @@ public partial class ClientHandler
                         {
                             #region - code - 
 
-                            using (var tcpClient = new TcpClient("localhost", 2000))
+                            using (var tcpClient = new TcpClient(localHost, 2000))
                             {
                                 var strRegIso = montaConfirmacaoCE(regIso);
 
@@ -423,7 +425,7 @@ public partial class ClientHandler
                             }
                             else
                             {
-                                using (var tcpClient = new TcpClient("localhost", 2000))
+                                using (var tcpClient = new TcpClient(localHost, 2000))
                                 {
                                     // --------------------------------
                                     // processamento no cnet server DESFAZ
