@@ -9,9 +9,14 @@ namespace SimulaISO
 {
     class Program
     {
-        private const int portNum = 10116;
+        private const int portNum = 2700;
 
         static void Main(string[] args)
+        {
+            Envia200();
+        }
+
+        static void Envia200()
         {
             var tcpClient = new TcpClient();
 

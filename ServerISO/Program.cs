@@ -109,6 +109,9 @@ public class ClientService
 
 public class SynchronousSocketListener
 {
+    // software express
+    public static int portNum = 2700;
+
     public static int Main(String[] args)
     {
         Console.WriteLine("\nServer port...");
@@ -126,9 +129,7 @@ public class SynchronousSocketListener
 
         return 0;
     }
-
-    public static int portNum = 2700;
-
+    
     public static void StartListening()
     {
         var ConnectionPool = new ClientConnectionPool();
