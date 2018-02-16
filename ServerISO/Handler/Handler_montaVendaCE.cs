@@ -65,6 +65,7 @@ public partial class ClientHandler
             registro = registro.PadRight(200, '*') + str + regIso.nsuOrigem;
 
             Log(registro);
+
             return registro;
         }
         catch (System.Exception ex)

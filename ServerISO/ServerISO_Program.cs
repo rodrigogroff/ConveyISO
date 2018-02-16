@@ -356,6 +356,75 @@ public partial class ClientHandler
 
                         bQuit = true;
                     }
+                    else if (dadosRecebidos.Substring(0, 4) == "0400" ||
+                                                    dadosRecebidos.Substring(0, 4) == "0420")
+                    {
+                        Log("Registro 400 || 420 detectado!");
+
+                        #region - 400 || 420 - 
+
+                        string codigoIso, strRegIso;
+
+                        if (dadosRecebidos.Substring(0, 4) == "0400")
+                        {
+                            codigoIso = "0410";
+                            strRegIso = montaCancelamento(regIso, "012345678901234567890123456");
+                        }
+                        else
+                        {
+                            codigoIso = "0430";
+                            strRegIso = montaDesfazimento(regIso);
+                        }
+
+                        if (string.IsNullOrEmpty(strRegIso))
+                        {
+                            Log("Falha na desmontagem!");
+                        }
+                        else if (strRegIso.Length < 20)
+                        {
+                            Log("Falha na desmontagem! 2");
+                        }
+                        else
+                        {
+                            string dadosRec400 = enviaRecebeDadosCNET(strRegIso);
+
+                            if (dadosRec400 == "")
+                            {
+                                Log("Recebeu ISO vazio");
+                            }
+                            else if (dadosRec400.Length < 27)
+                            {
+                                Log("Recebeu ISO tamanho incorreto");
+                            }
+                            else
+                            {
+                                dadosRec400 = dadosRec400.PadRight(200, ' ');
+
+                                var isoRegistro = new ISO8583
+                                {
+                                    codigo = codigoIso,
+                                    codProcessamento = regIso.codProcessamento,
+                                    codLoja = regIso.codLoja,
+                                    terminal = regIso.terminal,
+                                    codResposta = dadosRec400.Substring(2, 2),
+                                    bit127 = "000" + dadosRec400.Substring(21, 6),
+                                    nsuOrigem = regIso.nsuOrigem,
+                                };
+
+                                Log("Montagem Bit 62");
+
+                                isoRegistro.bit62 = !(dadosRec400.Substring(0, 4) == "0400") ? 
+                                    dadosRec400.Substring(7, 6) + regIso.valor :
+                                    regIso.bit125.Substring(3, 6) + regIso.valor;
+
+                                Log(isoRegistro);
+
+                                enviaDadosEXPRESS(isoRegistro.registro);
+                            }
+                        }
+
+                        #endregion
+                    }
                     else
                     {
                         bQuit = true;
@@ -389,7 +458,7 @@ public partial class ClientHandler
 
     public string enviaRecebeDadosCNET(string registroCNET)
     {
-        Log("enviaRecebeDadosCNET " + registroCNET);
+        Log("enviaRecebeDadosCNET (enviado) " + registroCNET);
 
         using (var tcpClient = new TcpClient())
         {
@@ -403,7 +472,8 @@ public partial class ClientHandler
             int BytesRead = networkStream.Read(bytes, 0, (int)tcpClient.ReceiveBufferSize);
 
             string dadosSocket = Encoding.ASCII.GetString(bytes, 0, BytesRead);
-            Console.WriteLine("\nRecebido CNET Server >" + dadosSocket + "<");
+
+            Log("enviaRecebeDadosCNET (recebido) " + dadosSocket);
 
             return dadosSocket;
         }
