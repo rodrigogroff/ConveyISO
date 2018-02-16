@@ -242,6 +242,9 @@ public partial class ClientHandler
         {
             var dadosRecebidos = msgReceived.ToString();
 
+            if (dadosRecebidos.Length > 2)
+                dadosRecebidos = dadosRecebidos.Substring(2);
+
             msgReceived.Clear();
             
             if (dadosRecebidos != null && dadosRecebidos.Length > 4)
