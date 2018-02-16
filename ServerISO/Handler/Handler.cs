@@ -244,7 +244,8 @@ public partial class ClientHandler
 
             msgReceived.Clear();
             
-            Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "<");
+            if (dadosRecebidos != null && dadosRecebidos.Length > 4)
+                Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "<");
 
             if (dadosRecebidos.Length == 0)
             {
