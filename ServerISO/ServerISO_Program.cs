@@ -314,6 +314,9 @@ public partial class ClientHandler
                                                 montaCNET_VendaCEparcelada(ref regIso) :
                                                 montaCNET_VendaCE(regIso);
 
+                            // TODO!
+                            // verificar retorno!!!
+
                             var dadosRecCNET_200 = enviaRecebeDadosCNET(tcpClient, registroCNET);
 
                             // --------------------------------
