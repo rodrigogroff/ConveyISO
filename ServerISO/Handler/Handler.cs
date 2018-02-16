@@ -6,12 +6,14 @@ using System.Threading;
 
 public partial class ClientHandler
 {
-    public ClientHandler(TcpClient ClientSocket, int number)
+    public ClientHandler(TcpClient _clientSocket, int number)
     {
-        ClientSocket.ReceiveTimeout = 1000;
-        this.ClientSocket = ClientSocket;
-        networkStream = ClientSocket.GetStream();
-        bytes = new byte[ClientSocket.ReceiveBufferSize];
+        this.ClientSocket = _clientSocket;
+
+        _clientSocket.ReceiveTimeout = 1000;
+        
+        networkStream = _clientSocket.GetStream();
+        bytes = new byte[_clientSocket.ReceiveBufferSize];
         ContinueProcess = true;
 
         strLogFile = "logFile_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "_" + GetRandomString(9) + ".txt";

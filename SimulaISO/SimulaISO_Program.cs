@@ -13,8 +13,8 @@ namespace SimulaISO
 
         static void Main(string[] args)
         {
-            //Envia200_202();
-            //Envia420_desfazimento();
+            Envia200_202();
+            Envia420_desfazimento();
             Envia400_410();
         }
 
