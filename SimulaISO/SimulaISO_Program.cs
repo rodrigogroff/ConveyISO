@@ -14,7 +14,8 @@ namespace SimulaISO
         static void Main(string[] args)
         {
             //Envia200_202();
-            Envia420_desfazimento();           
+            //Envia420_desfazimento();
+            Envia400_410();
         }
 
         static void Envia200_202()
@@ -102,6 +103,55 @@ namespace SimulaISO
 
                         // Returns the data received from the host to the console.
                         string returndata = Encoding.ASCII.GetString(bytes, 0, BytesRead);
+                        Console.WriteLine("\nRecebido " + returndata);
+                    }
+                }
+
+                networkStream.Close();
+                tcpClient.Close();
+
+            }
+            catch (SocketException)
+            {
+                Console.WriteLine("Sever not available!");
+            }
+            catch (System.IO.IOException)
+            {
+                Console.WriteLine("Sever not available!");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+        
+        static void Envia400_410()
+        {
+            var tcpClient = new TcpClient();
+
+            try
+            {
+                tcpClient.Connect("localhost", portNum);
+                NetworkStream networkStream = tcpClient.GetStream();
+
+                if (networkStream.CanWrite)
+                {
+                    var DataToSend = "0400B238000000C0000000000000000000080028000000000075921115181457153510181457111500000090000000000006319009000000077";
+
+                    {
+                        Byte[] sendBytes = Encoding.ASCII.GetBytes(DataToSend);
+                        networkStream.Write(sendBytes, 0, sendBytes.Length);
+                    }
+
+                    Console.WriteLine("\nEnviado " + DataToSend);
+
+                    {
+                        // Reads the NetworkStream into a byte buffer.
+                        byte[] bytes = new byte[tcpClient.ReceiveBufferSize];
+                        int BytesRead = networkStream.Read(bytes, 0, (int)tcpClient.ReceiveBufferSize);
+
+                        // Returns the data received from the host to the console.
+                        string returndata = Encoding.UTF7.GetString(bytes, 0, BytesRead);
                         Console.WriteLine("\nRecebido " + returndata);
                     }
                 }

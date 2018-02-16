@@ -259,6 +259,15 @@ public class ClientHandler
 
                 bQuit = true;
             }
+            else if (dadosRecebidos.StartsWith("05CECA"))
+            {
+                var resp = "000000S00007820171115000078HELENA APARECIDA MANOEL                 290000Cancelado           00000000000609200000000000077000077000000000140100659200000000759215-11-201718:08:5915-11-201718:14:45";
+
+                byte[] sendBytes = Encoding.ASCII.GetBytes(resp);
+                networkStream.Write(sendBytes, 0, sendBytes.Length);
+
+                bQuit = true;
+            }
             else
                 bQuit = true;
         }

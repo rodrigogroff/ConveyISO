@@ -431,8 +431,9 @@ public partial class ClientHandler
 
                                     if (codigoIso == "0410")
                                     {
-                                        
+                                        // -------------------------
                                         // cancelamento
+                                        // -------------------------
 
                                         if (dadosRec400 == "")
                                         {
@@ -470,7 +471,9 @@ public partial class ClientHandler
                                     }
                                     else
                                     {
+                                        // -------------------------
                                         // desfazimento não devolve EXPRESS
+                                        // -------------------------
                                     }
                                 }
                             }
