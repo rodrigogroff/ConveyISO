@@ -10,26 +10,13 @@ public partial class ClientHandler
 
     public ClientHandler(TcpClient _clientSocket, int number)
     {
+        ContinueProcess = true;
         this.ClientSocket = _clientSocket;
 
         _clientSocket.ReceiveTimeout = 1000;
         
         networkStream = _clientSocket.GetStream();
         bytes = new byte[_clientSocket.ReceiveBufferSize];
-        ContinueProcess = true;
-
-        strLogFile = "logFile_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "_" + GetRandomString(9) + ".txt";
-        
-        sw = new StreamWriter(strLogFile, false)
-        {
-            AutoFlush = true
-        };
-
-        Log("");
-        Log("==========================================");
-        Log("CNET ISO vr 1.00 [" + number + "]");
-        Log("==========================================");
-        Log("");
     }
 
     #region - code - 
@@ -108,10 +95,28 @@ public partial class ClientHandler
 
     StreamWriter sw;
 
+    bool firstLog = true;
+
     public void Log(string dados)
     {
         var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " {" + dados + "}";
 
+        if (firstLog)
+        {
+            firstLog = false;
+
+            strLogFile = "logFile_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "_" + GetRandomString(9) + ".txt";
+
+            sw = new StreamWriter(strLogFile, false)
+            {
+                AutoFlush = true
+            };
+
+            Log("==========================================");
+            Log("CNET ISO vr 1.00");
+            Log("==========================================");
+        }
+        
         sw.WriteLine(st);
         Console.WriteLine(st);
     }
@@ -120,6 +125,8 @@ public partial class ClientHandler
 
     public void LogFalha(string dados)
     {
+        Log(dados);
+
         var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " {" + dados + "}";
 
         var swFalha = new StreamWriter("FALHA" + numFalha + strLogFile, false)
