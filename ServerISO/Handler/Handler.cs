@@ -490,9 +490,32 @@ public partial class ClientHandler
                                     }
                                     else
                                     {
-                                        // -------------------------
-                                        // desfazimento não devolve EXPRESS
-                                        // -------------------------
+                                        // --------------------------------
+                                        // desfazimento
+                                        // --------------------------------
+
+                                        #region - monta 430 - 
+
+                                        var Iso430 = new ISO8583
+                                        {
+                                            codigo = codigoIso,
+                                            nsuOrigem = regIso.nsuOrigem,
+                                            codResposta = "00",                                            
+                                            valor = regIso.valor,
+                                            terminal = regIso.terminal,
+                                            codLoja = regIso.codLoja,
+                                            bit62 = regIso.nsuOrigem.PadLeft(6,'0') + regIso.valor.PadLeft(12,'0')
+                                        };
+                                        
+                                        Log(Iso430);
+
+                                        #endregion
+
+                                        // --------------------------------
+                                        // envia 210 EXPRESS
+                                        // --------------------------------
+
+                                        enviaDadosEXPRESS(Iso430.registro);
                                     }
                                 }
                             }
