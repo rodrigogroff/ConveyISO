@@ -422,10 +422,10 @@ public partial class ClientHandler
                                 codigoIso = "0410";
                                 strRegIso = montaCancelamento(regIso, "012345678901234567890123456");
                             }
-                            else
+                            else //if (isoCode == "0420")
                             {
                                 codigoIso = "0430";
-                                strRegIso = montaDesfazimento(regIso);
+                                strRegIso = montaDesfazimento(regIso, novo: true);
                             }
 
                             Log("codigoIso " + codigoIso);
@@ -450,9 +450,7 @@ public partial class ClientHandler
 
                                     if (codigoIso == "0410")
                                     {
-                                        // -------------------------
-                                        // cancelamento
-                                        // -------------------------
+                                        #region - cancelamento -
 
                                         if (dadosRec400 == "")
                                         {
@@ -487,12 +485,18 @@ public partial class ClientHandler
 
                                             enviaDadosEXPRESS(isoRegistro.registro);
                                         }
+
+                                        #endregion
                                     }
                                     else
                                     {
-                                        // --------------------------------
-                                        // desfazimento
-                                        // --------------------------------
+                                        #region - desfazimento -
+
+                                        if (!dadosRec400.Contains("S"))
+                                        {
+                                            strRegIso = montaDesfazimento(regIso, novo: false);
+                                            dadosRec400 = enviaRecebeDadosCNET(tcpClient, strRegIso);
+                                        }
 
                                         #region - monta 430 - 
 
@@ -516,6 +520,8 @@ public partial class ClientHandler
                                         // --------------------------------
 
                                         enviaDadosEXPRESS(Iso430.registro);
+
+                                        #endregion
                                     }
                                 }
                             }
