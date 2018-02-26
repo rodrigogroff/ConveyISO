@@ -26,7 +26,7 @@ public partial class ClientHandler
     StringBuilder msgReceived = new StringBuilder();
     Random random = new Random();
 
-    string strLogFile = "";
+    string strLogFile = "", idLogFile = "";
     bool ContinueProcess = false;
     byte[] bytes;
 
@@ -105,7 +105,33 @@ public partial class ClientHandler
         {
             firstLog = false;
 
-            strLogFile = "logFile_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "_" + GetRandomString(9) + ".txt";
+            string mes = DateTime.Now.Month.ToString().PadLeft(2, '0');
+            string ano = DateTime.Now.Year.ToString().PadLeft(2, '0');
+            string dia = DateTime.Now.Day.ToString().PadLeft(2, '0');
+
+            string dir = "logs";
+
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+            
+            dir += "\\" + ano;
+
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+
+            dir += "\\" + mes;
+
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+
+            dir += "\\" + dia;
+
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+
+            idLogFile = "logFile_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + "_" + GetRandomString(9) + ".txt";
+
+            strLogFile = dir + "\\" + idLogFile;
 
             sw = new StreamWriter(strLogFile, false)
             {
@@ -129,7 +155,7 @@ public partial class ClientHandler
 
         var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " {" + dados + "}";
 
-        var swFalha = new StreamWriter("FALHA" + numFalha + strLogFile, false)
+        var swFalha = new StreamWriter("FALHA" + numFalha + idLogFile, false)
         {
             AutoFlush = true
         };
@@ -552,7 +578,7 @@ public partial class ClientHandler
         
         if (bFinaliza)
         {
-            Log("ProcessDataReceived FINALIZADO ");
+            Log("========= ProcessDataReceived FINALIZADO ====================");
 
             networkStream.Close();
             ClientSocket.Close();
