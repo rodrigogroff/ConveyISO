@@ -494,8 +494,11 @@ public partial class ClientHandler
 
                                         if (!dadosRec400.Contains("S"))
                                         {
-                                            strRegIso = montaDesfazimento(regIso, novo: false);
-                                            dadosRec400 = enviaRecebeDadosCNET(tcpClient, strRegIso);
+                                            using (var tcpClientRetry = new TcpClient(localHost, 2000))
+                                            {
+                                                strRegIso = montaDesfazimento(regIso, novo: false);
+                                                dadosRec400 = enviaRecebeDadosCNET(tcpClientRetry, strRegIso);
+                                            }
                                         }
 
                                         #region - monta 430 - 
