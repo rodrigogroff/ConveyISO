@@ -33,13 +33,13 @@ public partial class ClientHandler
 
     int RandomNumber(int min, int max)
     {
-        Thread.Sleep(1);
+        //Thread.Sleep(1);
         return random.Next(min, max);
     }
 
     public string GetRandomString(int size)
     {
-        Thread.Sleep(100);
+        Thread.Sleep(1);
 
         var ret = "";
 
@@ -100,7 +100,7 @@ public partial class ClientHandler
 
     public void Log(string dados)
     {
-        var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " {" + dados + "}";
+        var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss:ffff") + " {" + dados + "}";
 
         if (firstLog)
         {
@@ -154,7 +154,7 @@ public partial class ClientHandler
     {
         Log(dados);
 
-        var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " {" + dados + "}";
+        var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss:ffff") + " {" + dados + "}";
 
         var swFalha = new StreamWriter(dir + "FALHA" + numFalha + idLogFile, false)
         {
@@ -172,7 +172,7 @@ public partial class ClientHandler
         // somente no disco!
 
         var dados = " ISO8583-DETALHES DO REGISTRO \r\n         ======================================================== \r\n         Registro Iso : codigo       =" + isoRegistro.codigo + "\r\n         Bits preenchidos :          =" + isoRegistro.relacaoBits + "\r\n         bit( 3  ) - Codigo Proc.    =" + isoRegistro.codProcessamento + "\r\n         bit( 4  ) - valor           =" + isoRegistro.valor + "\r\n         bit( 7  ) - datahora        =" + isoRegistro.datetime + "\r\n         bit( 11 ) - NSU Origem      =" + isoRegistro.nsuOrigem + "\r\n         bit( 13 ) - data            =" + isoRegistro.Date + "\r\n         bit( 22 ) - modo captura    =" + isoRegistro.bit22 + "\r\n         bit( 35 ) - trilha          =" + isoRegistro.trilha2 + "\r\n         bit( 37 ) - nsu alternativo =" + isoRegistro.nsu + "\r\n         bit( 39 ) - codResposta     =" + isoRegistro.codResposta + "\r\n         bit( 41 ) - terminal        =" + isoRegistro.terminal + "\r\n         bit( 42 ) - codigoLoja      =" + isoRegistro.codLoja + "\r\n         bit( 49 ) - codigo moeda    =" + isoRegistro.bit49 + "\r\n         bit( 52 ) - Senha           =" + isoRegistro.senha + "\r\n         bit( 62 ) - Dados transacao =" + isoRegistro.bit62 + "\r\n         bit( 63 ) - Dados transacao =" + isoRegistro.bit63 + "\r\n         bit( 64 ) - Dados transacao =" + isoRegistro.bit64 + "\r\n         bit( 90 ) - dados original  =" + isoRegistro.bit90 + "\r\n         bit( 125 )- NSU original    =" + isoRegistro.bit125 + "\r\n         bit( 127 )- NSU             =" + isoRegistro.bit127 + "\r\n         ======================================================== \r\n";
-        var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " {" + dados + "}";
+        var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss:ffff") + " {" + dados + "}";
 
         sw.WriteLine(st);
     }
@@ -191,6 +191,7 @@ public partial class ClientHandler
 
             byte[] sendBytes = Encoding.ASCII.GetBytes(registroCNET);
             networkStream.Write(sendBytes, 0, sendBytes.Length);
+            networkStream.Flush();
         }
         catch (SocketException ex)
         {
@@ -214,6 +215,7 @@ public partial class ClientHandler
 
             byte[] sendBytes = Encoding.ASCII.GetBytes(registroCNET);
             networkStream.Write(sendBytes, 0, sendBytes.Length);
+            networkStream.Flush();
 
             byte[] bytes = new byte[tcpClient.ReceiveBufferSize];
             int BytesRead = networkStream.Read(bytes, 0, (int)tcpClient.ReceiveBufferSize);
@@ -253,6 +255,7 @@ public partial class ClientHandler
             Log("tamanho a ser enviado em hexa:" + str.Substring(2) + str.Substring(0, 2));
 
             networkStream.Write(bytes, 0, bytes.Length);
+            networkStream.Flush();
         }
         catch (SocketException ex)
         {
@@ -446,7 +449,7 @@ public partial class ClientHandler
 
                             #endregion
                                                         
-                            //bFinaliza = false; // continua depois via 202
+                            bFinaliza = false; // continua depois via 202
                         }
                         else if (isoCode == "0202")
                         {
@@ -476,7 +479,7 @@ public partial class ClientHandler
 
                             #endregion
 
-                            //bFinaliza = true;
+                            bFinaliza = true;
                         }
                         else if (isoCode == "0400" || isoCode == "0420")
                         {
@@ -555,7 +558,7 @@ public partial class ClientHandler
                                     // processamento no cnet server DESFAZ
                                     // --------------------------------
 
-                                    string dadosRec400 = enviaRecebeDadosCNET(tcpClient, strRegIso);
+                                    string dadosRec400 = enviaRecebeDadosCNET(tcpClient, strRegIso), codResp = "00";
 
                                     if (codigoIso == "0410")
                                     {
@@ -607,6 +610,9 @@ public partial class ClientHandler
                                             {
                                                 strRegIso = montaDesfazimento(regIso, novo: false);
                                                 dadosRec400 = enviaRecebeDadosCNET(tcpClientRetry, strRegIso);
+
+                                                if (!dadosRec400.Contains("S"))
+                                                    codResp = "06";
                                             }
                                         }
 
@@ -614,9 +620,9 @@ public partial class ClientHandler
 
                                         var Iso430 = new ISO8583
                                         {
-                                            codigo = codigoIso,
+                                            codigo = "430",
                                             nsuOrigem = regIso.nsuOrigem,
-                                            codResposta = "00",                                            
+                                            codResposta = codResp,                                            
                                             valor = regIso.valor,
                                             terminal = regIso.terminal,
                                             codLoja = regIso.codLoja,
@@ -638,7 +644,7 @@ public partial class ClientHandler
                                 }
                             }
 
-                            //bFinaliza = true;
+                            bFinaliza = true;
                         }
                         else
                             bFinaliza = true;

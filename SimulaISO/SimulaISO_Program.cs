@@ -34,6 +34,7 @@ namespace SimulaISO
                     {
                         Byte[] sendBytes = Encoding.ASCII.GetBytes(DataToSend);
                         networkStream.Write(sendBytes, 0, sendBytes.Length);
+                        networkStream.Flush();
                     }
 
                     Console.WriteLine("\nEnviado " + DataToSend);
@@ -53,6 +54,7 @@ namespace SimulaISO
                     {
                         Byte[] sendBytes = Encoding.ASCII.GetBytes(DataToSend);
                         networkStream.Write(sendBytes, 0, sendBytes.Length);
+                        networkStream.Flush();
                     }
 
                     Console.WriteLine("\nEnviado " + DataToSend);
@@ -92,6 +94,7 @@ namespace SimulaISO
                     {
                         Byte[] sendBytes = Encoding.ASCII.GetBytes(DataToSend);
                         networkStream.Write(sendBytes, 0, sendBytes.Length);
+                        networkStream.Flush();
                     }
 
                     Console.WriteLine("\nEnviado " + DataToSend);
@@ -141,6 +144,7 @@ namespace SimulaISO
                     {
                         Byte[] sendBytes = Encoding.ASCII.GetBytes(DataToSend);
                         networkStream.Write(sendBytes, 0, sendBytes.Length);
+                        networkStream.Flush();
                     }
 
                     Console.WriteLine("\nEnviado " + DataToSend);

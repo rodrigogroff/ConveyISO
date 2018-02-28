@@ -82,7 +82,7 @@ public class ClientService
                     ConnectionPool.Enqueue(client);
             }
 
-            Thread.Sleep(100);
+            Thread.Sleep(1);
         }
     }
 
@@ -152,7 +152,7 @@ public class SynchronousSocketListener
                     ConnectionPool.Enqueue(new ClientHandler(handler));
                 }
 
-                Thread.Sleep(100);
+                Thread.Sleep(1);
             }
 
             //listener.Stop();
@@ -247,6 +247,7 @@ public class ClientHandler
 
                 byte[] sendBytes = Encoding.ASCII.GetBytes(resp);
                 networkStream.Write(sendBytes, 0, sendBytes.Length);
+                networkStream.Flush();
 
                 bQuit = true;
             }
@@ -256,6 +257,7 @@ public class ClientHandler
 
                 byte[] sendBytes = Encoding.ASCII.GetBytes(resp);
                 networkStream.Write(sendBytes, 0, sendBytes.Length);
+                networkStream.Flush();
 
                 bQuit = true;
             }
@@ -265,6 +267,7 @@ public class ClientHandler
 
                 byte[] sendBytes = Encoding.ASCII.GetBytes(resp);
                 networkStream.Write(sendBytes, 0, sendBytes.Length);
+                networkStream.Flush();
 
                 bQuit = true;
             }
@@ -278,56 +281,6 @@ public class ClientHandler
             ClientSocket.Close();
             ContinueProcess = false;
         }
-
-        #region - sample code - 
-
-        /*
-         * 
-         * 05CECE1000680882676600962299134801265092175CFDE84D7B2654300000000338201000000003382*********************************************************************************************************************00006811150094
-15-02-18 10:57:56 AM# Pid:016352: L(0) hnd:005092
--> [ENTRADA] SocketConvey:connectSocket 
-15-02-18 10:57:56 AM# Pid:016352: L(0) hnd:005160 SocketConvey:connectSocket
--> [ SAIDA ] SocketConvey:connectSocket 
-15-02-18 10:57:56 AM# Pid:016352: L(0) hnd:005188
--> [ENTRADA] SocketConvey:socketEnvia 
-15-02-18 10:57:56 AM# Pid:016352: L(0) hnd:005180 SocketConvey:socketEnvia
--> [ SAIDA ] SocketConvey:socketEnvia 
-15-02-18 10:57:56 AM# Pid:016352: L(0) hnd:005192
--> [ENTRADA] SocketConvey:socketRecebe 
-15-02-18 10:57:56 AM# Pid:016352: L(0) hnd:005196 SocketConvey:socketRecebe
--> [ DADOS ] 000000S00006720180215000067EMERSON CONRADO RIBEIRO                 004200                    000000000006156000096229913480015-02-201810:57:56068Saldo disponível no mês: 501,25 * Saldo disponível parcelado: 501,25
-
-
-         * 
-        bool bQuit = (String.Compare(msgReceived.ToString(), "quit", true) == 0);
-
-        data = msgReceived.ToString();
-
-        msgReceived.Length = 0; // Clear buffer
-
-        Console.WriteLine("Text received from client:");
-        Console.WriteLine(data);
-
-        StringBuilder response = new StringBuilder();
-        response.Append("Received at ");
-        response.Append(DateTime.Now.ToString());
-        response.Append("\r\n");
-        response.Append(data);
-
-        // Echo the data back to the client.
-        byte[] sendBytes = Encoding.ASCII.GetBytes(response.ToString());
-        networkStream.Write(sendBytes, 0, sendBytes.Length);
-
-        // Client stop processing  
-        if (bQuit)
-        {
-            networkStream.Close();
-            ClientSocket.Close();
-            ContinueProcess = false;
-        }
-        */
-
-        #endregion
     }
 
     public void Close()

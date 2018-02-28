@@ -36,7 +36,7 @@ public class ClientConnectionPool
 
 public class ClientService
 {
-    const int NUM_OF_THREAD = 10;
+    const int NUM_OF_THREAD = 50;
 
     ClientConnectionPool ConnectionPool;
     Thread[] ThreadTask = new Thread[NUM_OF_THREAD];
@@ -80,7 +80,7 @@ public class ClientService
                     ConnectionPool.Enqueue(client);
             }
 
-            Thread.Sleep(100);
+            Thread.Sleep(1);
         }
     }
 
@@ -152,7 +152,7 @@ public class SynchronousSocketListener
                     ConnectionPool.Enqueue(new ClientHandler(handler, ClientNbr));
                 }
 
-                Thread.Sleep(100);
+                Thread.Sleep(1);
             }
 
             //listener.Stop();
