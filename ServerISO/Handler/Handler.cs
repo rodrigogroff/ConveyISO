@@ -156,7 +156,7 @@ public partial class ClientHandler
 
         var st = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss:ffff") + " {" + dados + "}";
 
-        var swFalha = new StreamWriter(dir + "FALHA" + numFalha + idLogFile, false)
+        var swFalha = new StreamWriter(dir + "\\FALHA" + numFalha + idLogFile, false)
         {
             AutoFlush = true
         };
