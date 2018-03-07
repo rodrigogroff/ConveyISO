@@ -279,11 +279,25 @@ public partial class ClientHandler
         {
             var dadosRecebidos = msgReceived.ToString();
 
-            if (dadosRecebidos != null && dadosRecebidos.Length > 0)
-            Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "<");
+            if (dadosRecebidos == null)
+                dadosRecebidos = "";
+
+            if (dadosRecebidos.Length > 0)
+                Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "<");
 
             if (dadosRecebidos.Length > 3)
                 dadosRecebidos = dadosRecebidos.Substring(2);
+            else
+            {
+                Log("========= ProcessDataReceived FINALIZADO dadosRecebidos.Length < 3 ====================");
+
+                networkStream.Close();
+                ClientSocket.Close();
+                ContinueProcess = false;
+                sw.Close();
+
+                return;
+            }
 
             msgReceived.Clear();
             
