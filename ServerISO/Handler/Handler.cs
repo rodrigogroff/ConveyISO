@@ -279,14 +279,14 @@ public partial class ClientHandler
         {
             var dadosRecebidos = msgReceived.ToString();
 
-            if (dadosRecebidos.Length > 2)
+            if (dadosRecebidos != null && dadosRecebidos.Length > 0)
+            Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "<");
+
+            if (dadosRecebidos.Length > 3)
                 dadosRecebidos = dadosRecebidos.Substring(2);
 
             msgReceived.Clear();
             
-            if (dadosRecebidos != null && dadosRecebidos.Length > 4)
-                Log("ProcessDataReceived - dadosRecebidos >" + dadosRecebidos + "<");
-
             if (dadosRecebidos.Length == 0)
             {
                 // desprezar

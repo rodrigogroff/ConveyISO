@@ -112,6 +112,7 @@ public class SynchronousSocketListener
 
     public static int Main(String[] args)
     {
+        Console.WriteLine("\n" + DateTime.Now + "]");
         Console.WriteLine("\nCNET ISO [" + portNum + "]");
 
         StartListening();
