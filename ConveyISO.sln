@@ -10,7 +10,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerISO", "ServerISO\Serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerCNET", "ServerCNET\ServerCNET.csproj", "{4E3AA510-9D83-4513-9E78-1C2A7A2191DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TesteREDE", "..\TesteREDE\TesteREDE.csproj", "{CABE817D-EB4F-4510-A9A9-2A3C12256430}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TesteREDE", "TesteREDE\TesteREDE.csproj", "{CABE817D-EB4F-4510-A9A9-2A3C12256430}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
