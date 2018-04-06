@@ -32,12 +32,22 @@ namespace TesteREDE
 
                 string myPort = Console.ReadLine();
 
+                if (myPort != "")
+                    portNum = Convert.ToInt32(myPort);
+
+                Console.WriteLine(">> porta " + portNum);
+                Console.WriteLine(">> Abrindo conexão");
+
                 tcpClient.Connect(myIp, portNum);
                 NetworkStream networkStream = tcpClient.GetStream();
 
                 if (networkStream.CanWrite)
                 {
+                    Console.WriteLine(">> Conexão aberta");
+
                     var DataToSend = "PING";
+
+                    Console.WriteLine(">> Tentando escrever");
 
                     {
                         Byte[] sendBytes = Encoding.ASCII.GetBytes(DataToSend);
@@ -45,9 +55,11 @@ namespace TesteREDE
                         networkStream.Flush();
                     }
 
-                    Console.WriteLine("\nEnviado " + DataToSend);
+                    Console.WriteLine("Enviado " + DataToSend);
 
                     {
+                        Console.WriteLine(">> Tentando ler");
+
                         // Reads the NetworkStream into a byte buffer.
                         byte[] bytes = new byte[tcpClient.ReceiveBufferSize];
                         int BytesRead = networkStream.Read(bytes, 0, (int)tcpClient.ReceiveBufferSize);
@@ -55,7 +67,7 @@ namespace TesteREDE
                         // Returns the data received from the host to the console.
                         string returndata = Encoding.UTF7.GetString(bytes, 0, BytesRead);
 
-                        Console.WriteLine("\nRecebido " + returndata);
+                        Console.WriteLine("Recebido " + returndata);
 
                         if (returndata == "PONG")
                             Console.WriteLine("\n ======== TESTE OK ============ ");
@@ -79,6 +91,9 @@ namespace TesteREDE
             {
                 Console.WriteLine(e.ToString());
             }
+
+            Console.ReadLine();
+            Console.ReadLine();
         }
     }
 }
