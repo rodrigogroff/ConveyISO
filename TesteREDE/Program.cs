@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TesteREDE
@@ -13,7 +14,7 @@ namespace TesteREDE
         {
             int portNum = 2700;
 
-            var tcpClient = new TcpClient();
+            
 
             try
             {
@@ -36,48 +37,64 @@ namespace TesteREDE
                     portNum = Convert.ToInt32(myPort);
 
                 Console.WriteLine(">> porta " + portNum);
+
+                Console.WriteLine("repetir? [S] [N]");
+
+                string myStr = Console.ReadLine().ToUpper();
+
                 Console.WriteLine(">> Abrindo conexão");
 
-                tcpClient.Connect(myIp, portNum);
-                NetworkStream networkStream = tcpClient.GetStream();
-
-                if (networkStream.CanWrite)
+                while (true)
                 {
-                    Console.WriteLine(">> Conexão aberta");
-
-                    var DataToSend = "PING";
-
-                    Console.WriteLine(">> Tentando escrever");
-
+                    using (var tcpClient = new TcpClient())
                     {
-                        Byte[] sendBytes = Encoding.ASCII.GetBytes(DataToSend);
-                        networkStream.Write(sendBytes, 0, sendBytes.Length);
-                        networkStream.Flush();
-                    }
+                        tcpClient.Connect(myIp, portNum);
+                        NetworkStream networkStream = tcpClient.GetStream();
 
-                    Console.WriteLine("Enviado " + DataToSend);
+                        if (networkStream.CanWrite)
+                        {
+                            Console.WriteLine(">> Conexão aberta");
 
-                    {
-                        Console.WriteLine(">> Tentando ler");
+                            var DataToSend = "PING";
 
-                        // Reads the NetworkStream into a byte buffer.
-                        byte[] bytes = new byte[tcpClient.ReceiveBufferSize];
-                        int BytesRead = networkStream.Read(bytes, 0, (int)tcpClient.ReceiveBufferSize);
+                            Console.WriteLine(">> Tentando escrever");
 
-                        // Returns the data received from the host to the console.
-                        string returndata = Encoding.UTF7.GetString(bytes, 0, BytesRead);
+                            {
+                                Byte[] sendBytes = Encoding.ASCII.GetBytes(DataToSend);
+                                networkStream.Write(sendBytes, 0, sendBytes.Length);
+                                networkStream.Flush();
+                            }
 
-                        Console.WriteLine("Recebido " + returndata);
+                            Console.WriteLine("Enviado " + DataToSend);
 
-                        if (returndata == "PONG")
-                            Console.WriteLine("\n ======== TESTE OK ============ ");
-                        else
-                            Console.WriteLine("\n ############ !!! TESTE NAO OK !!! #################### ");
+                            {
+                                Console.WriteLine(">> Tentando ler");
+
+                                // Reads the NetworkStream into a byte buffer.
+                                byte[] bytes = new byte[tcpClient.ReceiveBufferSize];
+                                int BytesRead = networkStream.Read(bytes, 0, (int)tcpClient.ReceiveBufferSize);
+
+                                // Returns the data received from the host to the console.
+                                string returndata = Encoding.UTF7.GetString(bytes, 0, BytesRead);
+
+                                Console.WriteLine("Recebido " + returndata);
+
+                                if (returndata == "PONG")
+                                    Console.WriteLine("\n ======== TESTE OK ============ ");
+                                else
+                                    Console.WriteLine("\n ############ !!! TESTE NAO OK !!! #################### ");
+                            }
+
+                            if (myStr == "N")
+                                break;
+
+                            Thread.Sleep(3000);
+                        }
+
+                        networkStream.Close();
+                        tcpClient.Close();
                     }
                 }
-
-                networkStream.Close();
-                tcpClient.Close();
             }
             catch (SocketException)
             {
