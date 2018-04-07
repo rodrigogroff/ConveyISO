@@ -14,8 +14,6 @@ namespace TesteREDE
         {
             int portNum = 2700;
 
-            
-
             try
             {
                 Console.WriteLine("IP? [1] localhost [2] 138.118.164.191 ");
@@ -88,7 +86,7 @@ namespace TesteREDE
                             if (myStr == "N")
                                 break;
 
-                            Thread.Sleep(3000);
+                            Thread.Sleep(500);
                         }
 
                         networkStream.Close();

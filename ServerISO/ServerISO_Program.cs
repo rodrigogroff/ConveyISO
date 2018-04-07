@@ -117,9 +117,6 @@ public class SynchronousSocketListener
 
         StartListening();
 
-        Console.WriteLine("\nHit enter to continue...");
-        Console.Read();
-
         return 0;
     }
 
