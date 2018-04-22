@@ -330,10 +330,17 @@ public partial class ClientHandler
             }
             else if (dadosRecebidos.Length <= 20 && dadosRecebidos.Length > 4)
             {
-                Log("Registro recebido tamanho invalido! (" + dadosRecebidos.Length + ")");
+                Log("Registro recebido tamanho invalido! [1] (" + dadosRecebidos.Length + ")");
+            }
+            else if (dadosRecebidos.Length < 4)
+            {
+                Log("Registro recebido tamanho invalido! [2] (" + dadosRecebidos.Length + ")");
             }
             else
             {
+                Log("Dados recebidos: length " + dadosRecebidos.Length + "<");
+                Log("Dados recebidos: >" + dadosRecebidos + "<");
+
                 var isoCode = dadosRecebidos.Substring(0, 4);
 
                 Log("isoCode " + isoCode);
@@ -341,9 +348,12 @@ public partial class ClientHandler
                 if (isoCode != "0200" && isoCode != "0202" && isoCode != "0400" && isoCode != "0420")
                 {
                     Log("Código de processamento inválido!");
+                    
                 }
                 else
                 {
+                    Log("Dados recebidos: >" + dadosRecebidos + "<");
+
                     var regIso = new ISO8583(dadosRecebidos);
                     
                     Log(regIso);
